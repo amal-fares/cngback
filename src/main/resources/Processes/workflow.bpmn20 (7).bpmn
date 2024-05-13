@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
+  <signal id="notificationSignal" name="Notification Signal" ></signal>
+  <signal id="notifSignal" name="Notif Signal" ></signal>
+  <process id="my-process" name="workflow" isExecutable="true">
+    <startEvent id="startEvent1"></startEvent>
+    <userTask id="sid-96A7E3FE-99EF-48EC-A17E-C71BDED337BF" name="Remplir les champs de forumlaire de demande de conges" activiti:initiator="initiator">
+      <extensionElements>
+        <activiti:formProperty id="start" type="date" datePattern="MM-dd-yyyy hh:mm"></activiti:formProperty>
+        <activiti:formProperty id="end" type="date" datePattern="MM-dd-yyyy hh:mm"></activiti:formProperty>
+        <activiti:formProperty id="motif" type="string"></activiti:formProperty>
+        <activiti:formProperty id="type_congeexceptionnel" type="string"></activiti:formProperty>
+        <activiti:formProperty id="variablepause" type="boolean"></activiti:formProperty>
+        <activiti:formProperty id="is_delete_request" type="boolean"></activiti:formProperty>
+        <activiti:formProperty id="attachement" type="string"></activiti:formProperty>
+        <activiti:taskListener event="complete" delegateExpression="${checkdonneesdeform}"></activiti:taskListener>
+        <activiti:taskListener event="complete" delegateExpression="${initiateurTaskListener}"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <serviceTask id="mailmanager1" name="Envoi de mail manager1 " activiti:delegateExpression="${mailaumaangerpremeir}"></serviceTask>
+    <exclusiveGateway id="gateway1"></exclusiveGateway>
+    <serviceTask id="mailmanagerdeux" name="validatedemand" activiti:delegateExpression="${validatebouton}"></serviceTask>
+    <sequenceFlow id="flow1" sourceRef="startEvent1" targetRef="sid-96A7E3FE-99EF-48EC-A17E-C71BDED337BF"></sequenceFlow>
+    <userTask id="sid-71B22EF4-E49B-4537-AE04-E1EF253F20B7" name="Manger decision"  activiti:initiator="initiateur">
+      <extensionElements>
+        <activiti:formProperty id="is_validated" type="string"></activiti:formProperty>
+        <activiti:formProperty id="validatorname" type="string"></activiti:formProperty>
+        <activiti:formProperty id="initiateur" type="long"></activiti:formProperty>
+        <activiti:formProperty id="decision" type="string"></activiti:formProperty>
+        <activiti:taskListener event="create" delegateExpression="${initiateurvalidateorrefuse}"></activiti:taskListener>
+        <activiti:taskListener event="complete" delegateExpression="${envoidemailaucollabpourlinformerdelademande}"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <exclusiveGateway id="validateorefuse"></exclusiveGateway>
+    <serviceTask id="mailtocollabrejected" name="requestrejected mail_to_collab " activiti:delegateExpression="${requestrejectedtocollab}"></serviceTask>
+    <serviceTask id="refuserbouton" name="refuserboutton" activiti:delegateExpression="${refuserbutton}"></serviceTask>
+    <userTask id="managerdeuxacceptorrefuse" name="mangerdeuxrefuseor accept decision "  activiti:initiator="initiateur2">
+      <extensionElements>
+        <activiti:formProperty id="decision2" type="boolean"></activiti:formProperty>
+        <activiti:formProperty id="validatorname2" type="string"></activiti:formProperty>
+        <activiti:formProperty id="initiateur2" type="long"></activiti:formProperty>
+        <activiti:taskListener event="create" delegateExpression="${initiateurvalidateorrefuse2}"></activiti:taskListener>
+        <activiti:taskListener event="create" delegateExpression="${envoidemailaucollabpourlinformerdelademande2}"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="sid-BE5696F7-1D33-4068-8655-2250849E48D8" sourceRef="sid-71B22EF4-E49B-4537-AE04-E1EF253F20B7" targetRef="validateorefuse"></sequenceFlow>
+    <serviceTask id="sid-1DA5EA96-625E-41BE-B290-68CFAA7F7FB8" name="validerdeamnde2" activiti:delegateExpression="${validatebouton2}"></serviceTask>
+    <exclusiveGateway id="gateway4"></exclusiveGateway>
+    <serviceTask id="sid-FD907A11-D6AF-4056-99BD-2321CA3D2B5C" name="refuserdemand2 " activiti:delegateExpression="${refuserbouton2}"></serviceTask>
+    <endEvent id="endevent1"></endEvent>
+    <sequenceFlow id="sid-0F58841A-24EA-4FF4-95DD-3AB78C5A7781" sourceRef="mailtocollabrejected" targetRef="endevent1"></sequenceFlow>
+    <sequenceFlow id="mailmanager1flow" name="Regulier" sourceRef="gateway1" targetRef="mailmanager1">
+      <extensionElements>
+        <activiti:executionListener event="take" delegateExpression="${deadlinedutraitement}"></activiti:executionListener>
+      </extensionElements>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${motif =="regulier"}]]></conditionExpression>
+    </sequenceFlow>
+    <serviceTask id="envoimail" name="Envoi de mail augestionnaire " activiti:delegateExpression="${envoimailauges}"></serviceTask>
+    <userTask id="validateorrefuse" name="Validate or refuse ">
+      <extensionElements>
+        <activiti:formProperty id="is_validated" type="boolean"></activiti:formProperty>
+        <activiti:formProperty id="validatorname" type="string"></activiti:formProperty>
+        <activiti:formProperty id="validatorComment" type="string"></activiti:formProperty>
+        <activiti:taskListener event="create" delegateExpression="${envoidemailaucollabpoursuivreletatdelademande}"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <serviceTask id="mailcollaborateur" name="envoi de mail au collaborateur  " activiti:delegateExpression="${envoimailaucollab}"></serviceTask>
+    <serviceTask id="envoiemailaucollab1" name="envoidemailaucollaborateur" activiti:delegateExpression="${envoimailaucollab}"></serviceTask>
+    <serviceTask id="mailcollab3" name="envoi de mail au collaborateur  " activiti:delegateExpression="${envoimailaucollab}"></serviceTask>
+    <serviceTask id="sid-46680AD8-9A29-4515-8F26-89EE2227588E" name="updateddigitalfiles " activiti:delegateExpression="${updatedigitalfiles}"></serviceTask>
+    <exclusiveGateway id="fateway7" name="fateway7"></exclusiveGateway>
+    <sequenceFlow id="flow7" sourceRef="mailcollab3" targetRef="fateway7"></sequenceFlow>
+    <exclusiveGateway id="gatewayç" name="gateway4"></exclusiveGateway>
+    <sequenceFlow id="flow8" sourceRef="fateway7" targetRef="sid-46680AD8-9A29-4515-8F26-89EE2227588E"></sequenceFlow>
+    <sequenceFlow id="flow0" name="flow0" sourceRef="sid-96A7E3FE-99EF-48EC-A17E-C71BDED337BF" targetRef="gateway1"></sequenceFlow>
+    <sequenceFlow id="exeptionnel" name="Exceptionnel" sourceRef="gateway1" targetRef="envoimail">
+      <extensionElements>
+        <activiti:executionListener event="take" delegateExpression="${deadlinedutraitement2}"></activiti:executionListener>
+      </extensionElements>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${motif =="exceptionnel"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow12" name="flow12" sourceRef="envoimail" targetRef="validateorrefuse"></sequenceFlow>
+    <sequenceFlow id="flow90" sourceRef="validateorrefuse" targetRef="gatewayç"></sequenceFlow>
+    <sequenceFlow id="flow56" name="attachementvalidatedandrequestvalidated" sourceRef="gatewayç" targetRef="mailcollaborateur">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${is_validated == true || missingAttachment == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow44" name="attachementmissingandrequestvalidated" sourceRef="gatewayç" targetRef="envoiemailaucollab1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${is_validated == true || missingAttachment == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow50" sourceRef="sid-46680AD8-9A29-4515-8F26-89EE2227588E" targetRef="envoimail"></sequenceFlow>
+    <sequenceFlow id="flow34" name="attachementmissingandrequestrejected" sourceRef="gatewayç" targetRef="mailcollab3">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${is_validated == false || missingAttachment == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow31" name="flow31" sourceRef="envoiemailaucollab1" targetRef="fateway7"></sequenceFlow>
+    <serviceTask id="sid-117649C6-8897-4F35-9D85-83A1EA9B3FEC" name="mailtocollab2accepted" activiti:delegateExpression="${mailtocollab2accepted}"></serviceTask>
+    <sequenceFlow id="sid-A266A0B0-EC67-4D46-A855-28015DEE8B79" sourceRef="sid-1DA5EA96-625E-41BE-B290-68CFAA7F7FB8" targetRef="sid-117649C6-8897-4F35-9D85-83A1EA9B3FEC"></sequenceFlow>
+    <sequenceFlow id="sid-CF61BAF4-F1F5-419B-B2A4-AA947B2A1386" name="mailtoollab2fin" sourceRef="sid-117649C6-8897-4F35-9D85-83A1EA9B3FEC" targetRef="endevent1"></sequenceFlow>
+    <serviceTask id="sid-B1BE78C6-EF2D-447E-A067-284DD2D837B8" name="mailtocollabrefusedfin" activiti:delegateExpression="${mailtocollabrefusedfin}"></serviceTask>
+    <sequenceFlow id="sid-7195880F-1A2D-4962-9461-FA102ECE5BB4" sourceRef="sid-FD907A11-D6AF-4056-99BD-2321CA3D2B5C" targetRef="sid-B1BE78C6-EF2D-447E-A067-284DD2D837B8"></sequenceFlow>
+    <sequenceFlow id="sid-7FF9AA4D-4F1B-43E8-BEB0-89AA5BB4820A" sourceRef="sid-B1BE78C6-EF2D-447E-A067-284DD2D837B8" targetRef="endevent1"></sequenceFlow>
+    <intermediateCatchEvent id="waitForCondition" name="waitForCondition">
+      <signalEventDefinition signalRef="notificationSignal"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="sid-B1C24F2F-435E-4D49-A3FD-39D73C4336F6" name="catchtodecsion" sourceRef="waitForCondition" targetRef="sid-71B22EF4-E49B-4537-AE04-E1EF253F20B7"></sequenceFlow>
+    <sequenceFlow id="sid-465F47B3-17B9-4AC8-AA98-04FFD7DD8296" name="mailtocatch" sourceRef="mailmanager1" targetRef="waitForCondition"></sequenceFlow>
+    <sequenceFlow id="manager2refuseoraccept" name="deuxtogateway" sourceRef="managerdeuxacceptorrefuse" targetRef="gateway4"></sequenceFlow>
+    <sequenceFlow id="validated" name="decisiontrue" sourceRef="validateorefuse" targetRef="mailmanagerdeux">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="refusechemin" name="refusechemin" sourceRef="refuserbouton" targetRef="mailtocollabrejected"> </sequenceFlow>
+    <sequenceFlow id="refused" name="decision false" sourceRef="validateorefuse" targetRef="refuserbouton">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="decisiontruedeux" name="decisiontruedeux" sourceRef="gateway4" targetRef="sid-1DA5EA96-625E-41BE-B290-68CFAA7F7FB8">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision2 == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="decisionfalsedeux" name="decisionfalsedeux" sourceRef="gateway4" targetRef="sid-FD907A11-D6AF-4056-99BD-2321CA3D2B5C">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision2 == false}]]></conditionExpression>
+    </sequenceFlow>
+    <intermediateCatchEvent id="catchdeux" name="catchdeux">
+      <signalEventDefinition signalRef="notifSignal"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="validatecatch" name="validateatch" sourceRef="mailmanagerdeux" targetRef="catchdeux"></sequenceFlow>
+    <sequenceFlow id="catchmaangerdeux" name="catchmanagerdeux" sourceRef="catchdeux" targetRef="managerdeuxacceptorrefuse"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_my-process">
+    <bpmndi:BPMNPlane bpmnElement="my-process" id="BPMNPlane_my-process">
+      <bpmndi:BPMNShape bpmnElement="startEvent1" id="BPMNShape_startEvent1">
+        <omgdc:Bounds height="30.0" width="30.0" x="214.99999910593039" y="223.8758870559855"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-96A7E3FE-99EF-48EC-A17E-C71BDED337BF" id="BPMNShape_sid-96A7E3FE-99EF-48EC-A17E-C71BDED337BF">
+        <omgdc:Bounds height="80.0" width="100.00000000000006" x="304.9999937415126" y="198.87588780104352"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailmanager1" id="BPMNShape_mailmanager1">
+        <omgdc:Bounds height="80.0" width="99.99999999999994" x="496.6276810835173" y="100.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="gateway1" id="BPMNShape_gateway1">
+        <omgdc:Bounds height="40.0" width="40.0" x="422.47075418249284" y="198.87589369450575"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailmanagerdeux" id="BPMNShape_mailmanagerdeux">
+        <omgdc:Bounds height="80.0" width="100.0" x="867.4122565870142" y="99.99999701976785"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-71B22EF4-E49B-4537-AE04-E1EF253F20B7" id="BPMNShape_sid-71B22EF4-E49B-4537-AE04-E1EF253F20B7">
+        <omgdc:Bounds height="80.00000000000004" width="100.00000000000011" x="754.9999600648896" y="99.99999403953576"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="validateorefuse" id="BPMNShape_validateorefuse">
+        <omgdc:Bounds height="40.0" width="40.0" x="784.999982565642" y="179.9999946355822"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailtocollabrejected" id="BPMNShape_mailtocollabrejected">
+        <omgdc:Bounds height="80.0" width="100.0" x="934.9998845160108" y="299.99999105930357"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="managerdeuxacceptorrefuse" id="BPMNShape_managerdeuxacceptorrefuse">
+        <omgdc:Bounds height="79.99999999999999" width="100.0" x="989.9999704957017" y="74.99999552965183"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-1DA5EA96-625E-41BE-B290-68CFAA7F7FB8" id="BPMNShape_sid-1DA5EA96-625E-41BE-B290-68CFAA7F7FB8">
+        <omgdc:Bounds height="82.54776816033021" width="104.8865346671048" x="1259.999962449075" y="99.99999698180315"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="gateway4" id="BPMNShape_gateway4">
+        <omgdc:Bounds height="40.0" width="40.0" x="1114.6020166741782" y="119.99999940395358"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-FD907A11-D6AF-4056-99BD-2321CA3D2B5C" id="BPMNShape_sid-FD907A11-D6AF-4056-99BD-2321CA3D2B5C">
+        <omgdc:Bounds height="80.00000000000006" width="100.00000000000023" x="1174.9998769164176" y="198.87588482081134"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="28.0" width="28.0" x="1469.9999561905875" y="355.99995005131206"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="envoimail" id="BPMNShape_envoimail">
+        <omgdc:Bounds height="80.00000000000006" width="100.0" x="224.71897342362644" y="470.7845903041546"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="validateorrefuse" id="BPMNShape_validateorrefuse">
+        <omgdc:Bounds height="80.0" width="99.99999999999994" x="392.4707484464176" y="488.33329602082813"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailcollaborateur" id="BPMNShape_mailcollaborateur">
+        <omgdc:Bounds height="80.0" width="100.0" x="704.9999789893634" y="329.99996066093735"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="envoiemailaucollab1" id="BPMNShape_envoiemailaucollab1">
+        <omgdc:Bounds height="80.0" width="100.0" x="795.8641579798759" y="413.61271472625043"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailcollab3" id="BPMNShape_mailcollab3">
+        <omgdc:Bounds height="80.0" width="100.0" x="733.1416309234841" y="601.7803585162203"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-46680AD8-9A29-4515-8F26-89EE2227588E" id="BPMNShape_sid-46680AD8-9A29-4515-8F26-89EE2227588E">
+        <omgdc:Bounds height="80.0" width="99.99999999999989" x="1015.3930523277869" y="569.9999830126767"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="fateway7" id="BPMNShape_fateway7">
+        <omgdc:Bounds height="40.0" width="40.0" x="860.4683565667515" y="582.6499528757031"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="gatewayç" id="BPMNShape_gatewayç">
+        <omgdc:Bounds height="39.99999999999994" width="40.0" x="550.6074596723367" y="503.0287182511259"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-117649C6-8897-4F35-9D85-83A1EA9B3FEC" id="BPMNShape_sid-117649C6-8897-4F35-9D85-83A1EA9B3FEC">
+        <omgdc:Bounds height="80.00000000000001" width="100.0" x="1394.9999168515242" y="119.99999642372141"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-B1BE78C6-EF2D-447E-A067-284DD2D837B8" id="BPMNShape_sid-B1BE78C6-EF2D-447E-A067-284DD2D837B8">
+        <omgdc:Bounds height="80.00000000000003" width="100.0" x="1286.999883443124" y="239.99999284744283"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="waitForCondition" id="BPMNShape_waitForCondition">
+        <omgdc:Bounds height="30.0" width="30.0" x="659.9999606609362" y="124.99999031424576"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="catchdeux" id="BPMNShape_catchdeux">
+        <omgdc:Bounds height="30.0" width="30.0" x="974.9999709427366" y="203.8758876185308"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="catchmaangerdeux" id="BPMNEdge_catchmaangerdeux">
+        <omgdi:waypoint x="996.5056927193033" y="205.36013443323233"></omgdi:waypoint>
+        <omgdi:waypoint x="1020.7462250702728" y="154.9999955296518"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="validatecatch" id="BPMNEdge_validatecatch">
+        <omgdi:waypoint x="917.4122565870142" y="179.99999701976785"></omgdi:waypoint>
+        <omgdi:waypoint x="917.4122565870142" y="218.8758876185308"></omgdi:waypoint>
+        <omgdi:waypoint x="974.9999709427366" y="218.8758876185308"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow0" id="BPMNEdge_flow0">
+        <omgdi:waypoint x="404.99999374151264" y="227.44349942022424"></omgdi:waypoint>
+        <omgdi:waypoint x="426.1926958755131" y="222.59783538752603"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="decisiontruedeux" id="BPMNEdge_decisiontruedeux">
+        <omgdi:waypoint x="1154.329529783732" y="139.72751251350724"></omgdi:waypoint>
+        <omgdi:waypoint x="1207.0" y="139.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1199.0" y="136.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1259.999962449075" y="138.83583733782427"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="244.99999910593039" y="238.87588714539245"></omgdi:waypoint>
+        <omgdi:waypoint x="304.9999937415126" y="238.8758875030203"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="validated" id="BPMNEdge_validated">
+        <omgdi:waypoint x="818.0399214231179" y="193.03993349305813"></omgdi:waypoint>
+        <omgdi:waypoint x="867.4122565870142" y="166.68747315978746"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-A266A0B0-EC67-4D46-A855-28015DEE8B79" id="BPMNEdge_sid-A266A0B0-EC67-4D46-A855-28015DEE8B79">
+        <omgdi:waypoint x="1364.8864971161797" y="148.68247504353732"></omgdi:waypoint>
+        <omgdi:waypoint x="1394.9999168515242" y="152.93655972511857"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="mailmanager1flow" id="BPMNEdge_mailmanager1flow">
+        <omgdi:waypoint x="453.85198368681137" y="210.25712319882427"></omgdi:waypoint>
+        <omgdi:waypoint x="496.6276810835173" y="177.86396932076244"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-CF61BAF4-F1F5-419B-B2A4-AA947B2A1386" id="BPMNEdge_sid-CF61BAF4-F1F5-419B-B2A4-AA947B2A1386">
+        <omgdi:waypoint x="1452.4284974136372" y="199.99999642372143"></omgdi:waypoint>
+        <omgdi:waypoint x="1481.4436624385778" y="356.2353083104807"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_flow7">
+        <omgdi:waypoint x="833.1416309234841" y="621.6777580321856"></omgdi:waypoint>
+        <omgdi:waypoint x="866.203550509696" y="608.3851468186476"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="exeptionnel" id="BPMNEdge_exeptionnel">
+        <omgdi:waypoint x="435.1718112009592" y="231.57695071297212"></omgdi:waypoint>
+        <omgdi:waypoint x="297.70585702212236" y="470.7845903041546"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-465F47B3-17B9-4AC8-AA98-04FFD7DD8296" id="BPMNEdge_sid-465F47B3-17B9-4AC8-AA98-04FFD7DD8296">
+        <omgdi:waypoint x="596.6276810835172" y="139.9999962274744"></omgdi:waypoint>
+        <omgdi:waypoint x="659.9999606609362" y="139.99999144600343"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow8" id="BPMNEdge_flow8">
+        <omgdi:waypoint x="899.7038223719793" y="603.4144870704753"></omgdi:waypoint>
+        <omgdi:waypoint x="1015.3930523277869" y="608.0126794492653"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow44" id="BPMNEdge_flow44">
+        <omgdi:waypoint x="586.5795222606512" y="519.0007808394404"></omgdi:waypoint>
+        <omgdi:waypoint x="795.8641579798759" y="466.2220361254554"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="refused" id="BPMNEdge_refused">
+        <omgdi:waypoint x="816.2499800103251" y="208.74999719089908"></omgdi:waypoint>
+        <omgdi:waypoint x="934.9998845160108" y="301.11108198025215"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-7195880F-1A2D-4962-9461-FA102ECE5BB4" id="BPMNEdge_sid-7195880F-1A2D-4962-9461-FA102ECE5BB4">
+        <omgdi:waypoint x="1274.9998769164179" y="257.23486054856085"></omgdi:waypoint>
+        <omgdi:waypoint x="1286.999883443124" y="261.64101711969346"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-BE5696F7-1D33-4068-8655-2250849E48D8" id="BPMNEdge_sid-BE5696F7-1D33-4068-8655-2250849E48D8">
+        <omgdi:waypoint x="804.999975065391" y="179.9999940395358"></omgdi:waypoint>
+        <omgdi:waypoint x="804.9999750653941" y="180.0000021358301"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow90" id="BPMNEdge_flow90">
+        <omgdi:waypoint x="492.47074844641753" y="526.263406088836"></omgdi:waypoint>
+        <omgdi:waypoint x="551.4025026173845" y="523.8237611961736"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-7FF9AA4D-4F1B-43E8-BEB0-89AA5BB4820A" id="BPMNEdge_sid-7FF9AA4D-4F1B-43E8-BEB0-89AA5BB4820A">
+        <omgdi:waypoint x="1386.999883443124" y="310.6122080395004"></omgdi:waypoint>
+        <omgdi:waypoint x="1472.0600347745471" y="362.6898011760304"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="manager2refuseoraccept" id="BPMNEdge_manager2refuseoraccept">
+        <omgdi:waypoint x="1089.9999704957017" y="128.21324243296755"></omgdi:waypoint>
+        <omgdi:waypoint x="1118.7825476706403" y="135.81946840749163"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="decisionfalsedeux" id="BPMNEdge_decisionfalsedeux">
+        <omgdi:waypoint x="1144.1540926821267" y="150.4479233960052"></omgdi:waypoint>
+        <omgdi:waypoint x="1188.4296414697767" y="198.87588482081134"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow31" id="BPMNEdge_flow31">
+        <omgdi:waypoint x="845.4231895361504" y="493.61271472625043"></omgdi:waypoint>
+        <omgdi:waypoint x="845.0" y="532.0"></omgdi:waypoint>
+        <omgdi:waypoint x="880.0" y="532.0"></omgdi:waypoint>
+        <omgdi:waypoint x="880.336644615097" y="582.7816648273575"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow12" id="BPMNEdge_flow12">
+        <omgdi:waypoint x="324.71897342362644" y="510.0875611702866"></omgdi:waypoint>
+        <omgdi:waypoint x="331.0" y="510.0"></omgdi:waypoint>
+        <omgdi:waypoint x="359.0" y="526.0"></omgdi:waypoint>
+        <omgdi:waypoint x="392.4707484464176" y="526.9356231448469"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow56" id="BPMNEdge_flow56">
+        <omgdi:waypoint x="581.5369731284625" y="513.9582317072516"></omgdi:waypoint>
+        <omgdi:waypoint x="706.8018436269028" y="409.99996066093735"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow34" id="BPMNEdge_flow34">
+        <omgdi:waypoint x="583.4383243736297" y="530.1978535498329"></omgdi:waypoint>
+        <omgdi:waypoint x="733.1416309234841" y="613.8432885462416"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-0F58841A-24EA-4FF4-95DD-3AB78C5A7781" id="BPMNEdge_sid-0F58841A-24EA-4FF4-95DD-3AB78C5A7781">
+        <omgdi:waypoint x="1034.9998845160108" y="343.0059985425623"></omgdi:waypoint>
+        <omgdi:waypoint x="1470.0251888366533" y="369.15978494645753"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow50" id="BPMNEdge_flow50">
+        <omgdi:waypoint x="1015.3930523277869" y="603.7258812458633"></omgdi:waypoint>
+        <omgdi:waypoint x="324.71897342362644" y="517.058692070968"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-B1C24F2F-435E-4D49-A3FD-39D73C4336F6" id="BPMNEdge_sid-B1C24F2F-435E-4D49-A3FD-39D73C4336F6">
+        <omgdi:waypoint x="689.9999606609362" y="139.99999074408692"></omgdi:waypoint>
+        <omgdi:waypoint x="754.9999600648896" y="139.99999260673192"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
