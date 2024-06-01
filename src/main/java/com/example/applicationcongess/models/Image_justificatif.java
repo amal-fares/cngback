@@ -15,22 +15,20 @@ import java.util.Date;
 public class Image_justificatif {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long  id;
     private String name;
-    private String senderemail;
-    private String replymessage;
+
     private String imagenUrl;
     private String imagenId;
 
-    Date date_envoi ;
-    @Lob
-    private byte[] nature_fichier;
-    @JsonIgnore
+
+
     @ManyToOne
-    private Demande_conge demande_cngjustif;
+    private Demande_conge demandecngjustif;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_id")
+
     private Chatroom chatroom;
 
 
@@ -44,7 +42,7 @@ public class Image_justificatif {
         this.imagenId = imagenId;
     }
 
-    public int getId() {
+    public long  getId() {
         return id;
     }
 

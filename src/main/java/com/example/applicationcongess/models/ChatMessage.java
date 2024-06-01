@@ -21,16 +21,18 @@ public class ChatMessage {
         private String username;
         private String avatar;
 
-        Long idchat;
+
 
         Long sender;
-
+Long idchat;
 
         @JsonIgnore
         @ManyToOne
         Chatroom chat;
 
-        public String getText() {
+
+
+    public String getText() {
             return text;
         }
 

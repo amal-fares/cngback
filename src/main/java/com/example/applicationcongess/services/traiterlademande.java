@@ -38,17 +38,17 @@ public class traiterlademande implements TaskListener {
         int nombreutilisateurchevauchant=demande_congebRepository.planningequipe(demande_conge.getDate_fin(),demande_conge.getDate_debut(),demande_conge.getCollaborateur().getCin());
         if (nombreutilisateurchevauchant>3){
              System.out.println("impossible de prendre le congé , les periodes de conges de collab se chevauchent  ");
-             demande_conge.setStatut_conge(Statut_conge.rejette);
+             demande_conge.setStatutconge(Statut_conge.rejette);
              demande_congebRepository.save(demande_conge);
             runtimeService.setVariable(proessInstanceID, "is_validated", true );
 
 }else
          {
 
-             demande_conge.setStatut_conge(Statut_conge.valide1);
+             demande_conge.setStatutconge(Statut_conge.valide1);
              demande_congebRepository.save(demande_conge);
              runtimeService.setVariable(proessInstanceID, "is_validated", false );
-             System.out.println(demande_conge.getStatut_conge());
+             System.out.println(demande_conge.getStatutconge());
          }
     }
 }

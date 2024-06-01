@@ -1,5 +1,6 @@
 package com.example.applicationcongess.models;
 
+import com.example.applicationcongess.repositories.Imagerepository;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -35,5 +36,7 @@ public class Chatroom {
     List<ChatMessage> messages;
     @OneToMany(mappedBy = "chat1", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Messages> messages1; // Messages dans la salle de chat
-
+@OneToMany(mappedBy = "chatroom")
+@JsonIgnore
+    private List<Image_justificatif> imagelist;
 }

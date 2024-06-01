@@ -1,6 +1,7 @@
 package com.example.applicationcongess.services;
 
 import com.example.applicationcongess.controller.Demande_congecontr;
+import com.example.applicationcongess.enums.ERole;
 import com.example.applicationcongess.models.Personnel;
 import com.example.applicationcongess.repositories.PersonnelRepository;
 import org.activiti.engine.RuntimeService;
@@ -27,29 +28,26 @@ public class mailtocollab2accepted implements JavaDelegate {
     RuntimeService runtimeService;
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
-
         System.out.println("mailtocollab2accepted");
         String proessInstanceID = demande_congecontr.getCurrentProcessInstanceId();
 
-
         Long initiateurId = (long) runtimeService.getVariable(proessInstanceID, "initiator");
-        Personnel personnelto = personnelRepository.findById(initiateurId).orElse(null);
-        String subject = "suivre la demande";
-        String content = "Bonjour,\n\n" +
-                "votre demande est traite par   vote maanger n+2 " + personnelto.getManagerdeuxiemeniveau().getUsername() +" Elle  est traitée et confirméé avec succés" +
-                "Cordialement,\n" +
-                "Votre équipe de gestion des congés";
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        Personnel personnelsoumis = personnelRepository.findById(initiateurId).orElse(null);
+        if (personnelsoumis.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_manager2))) {
+            System.out.println("je suis le manager n+2");
+        } else {
+            String subject = "Suivi de l etat de  la demande";
+            String content = "Bonjour,\n\n" +
+                    "votre demande est traite par   vote maanger n+2 " + personnelsoumis.getManagerdeuxiemeniveau().getUsername() + " Elle  est traitée et confirmée avec succés" +
+                    "Cordialement,\n" +
+                    "Votre équipe de gestion des congés";
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-        helper.setTo(personnelto.getEmail());
-        helper.setSubject(subject);
-        helper.setText(content, true);
+            helper.setTo(personnelsoumis.getEmail());
+            helper.setSubject(subject);
+            helper.setText(content, true);
 
-        mailSender.send(message);
-
-
-    }
-
-    }
-
+            mailSender.send(message);
+        }
+    }}

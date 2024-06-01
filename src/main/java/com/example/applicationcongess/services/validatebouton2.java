@@ -34,7 +34,7 @@ public class validatebouton2 implements JavaDelegate {
         Demande_conge demande_conge=demande_congebRepository.demande(startAsDate,endAsDate,idcollab);
 
 
-        demande_conge.setStatut_conge(Statut_conge.valide2);
+        demande_conge.setStatutconge(Statut_conge.valide2);
         demande_congebRepository.save(demande_conge);
         runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "is_validated", true );
 

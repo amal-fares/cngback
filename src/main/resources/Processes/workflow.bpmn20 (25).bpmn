@@ -1,0 +1,756 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
+  <signal id="notificationSignal" name="Notification Signal" ></signal>
+  <signal id="notifSignal" name="Notif Signal" ></signal>
+  <signal id="notifSignall" name="Notif Signall" ></signal>
+  <signal id="notifSignalExc" name="Notif Signal Exc" ></signal>
+  <signal id="notifWithjustif" name="Notif Withjustif" ></signal>
+  <signal id="notifWithoutjustif" name="Notif Withoutjustif" ></signal>
+  <signal id="notifReguliermanager" name="Notif Reguliermanager" ></signal>
+  <process id="my-process" name="workflow" isExecutable="true">
+    <startEvent id="startEvent1"></startEvent>
+    <userTask id="sid-96A7E3FE-99EF-48EC-A17E-C71BDED337BF" name="Remplir les champs de forumlaire de demande de conges" activiti:initiator="initiator">
+      <extensionElements>
+        <activiti:formProperty id="start" type="date" datePattern="MM-dd-yyyy hh:mm"></activiti:formProperty>
+        <activiti:formProperty id="end" type="date" datePattern="MM-dd-yyyy hh:mm"></activiti:formProperty>
+        <activiti:formProperty id="motif" type="string"></activiti:formProperty>
+        <activiti:formProperty id="type_congeexceptionnel" type="string"></activiti:formProperty>
+        <activiti:formProperty id="variablepause" type="boolean"></activiti:formProperty>
+        <activiti:formProperty id="is_delete_request" type="boolean"></activiti:formProperty>
+        <activiti:formProperty id="id_demande_conge" type="long"></activiti:formProperty>
+        <activiti:formProperty id="rolesoumetter" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="attachement" type="string"></activiti:formProperty>
+        <activiti:taskListener event="complete" delegateExpression="${checkdonneesdeform}"></activiti:taskListener>
+        <activiti:taskListener event="complete" delegateExpression="${initiateurTaskListener}"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <serviceTask id="mailmanager1" name="Envoi de mail manager1 " activiti:delegateExpression="${mailaumaangerpremeir}"></serviceTask>
+    <exclusiveGateway id="gateway1"></exclusiveGateway>
+    <serviceTask id="mailmanagerdeux" name="validatedemand" activiti:delegateExpression="${validatebouton}"></serviceTask>
+    <sequenceFlow id="flow1" sourceRef="startEvent1" targetRef="sid-96A7E3FE-99EF-48EC-A17E-C71BDED337BF"></sequenceFlow>
+    <userTask id="sid-71B22EF4-E49B-4537-AE04-E1EF253F20B7" name="Manger decision" activiti:initiator="initiateur">
+      <extensionElements>
+        <activiti:formProperty id="is_validated" type="string"></activiti:formProperty>
+        <activiti:formProperty id="validatorname" type="string"></activiti:formProperty>
+        <activiti:formProperty id="initiateur" type="long"></activiti:formProperty>
+        <activiti:formProperty id="decision" type="string"></activiti:formProperty>
+        <activiti:taskListener event="create" delegateExpression="${initiateurvalidateorrefuse}"></activiti:taskListener>
+        <activiti:taskListener event="complete" delegateExpression="${envoidemailaucollabpourlinformerdelademande}"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <exclusiveGateway id="validateorefuse"></exclusiveGateway>
+    <serviceTask id="mailtocollabrejected" name="requestrejected mail_to_collab " activiti:delegateExpression="${requestrejectedtocollab}"></serviceTask>
+    <userTask id="managerdeuxacceptorrefuse" name="mangerdeuxrefuseor accept decision " activiti:initiator="initiateur2">
+      <extensionElements>
+        <activiti:formProperty id="decision2" type="boolean"></activiti:formProperty>
+        <activiti:formProperty id="validatorname2" type="string"></activiti:formProperty>
+        <activiti:formProperty id="initiateur2" type="long"></activiti:formProperty>
+        <activiti:taskListener event="create" delegateExpression="${initiateurvalidateorrefuse2}"></activiti:taskListener>
+        <activiti:taskListener event="create" delegateExpression="${envoidemailaucollabpourlinformerdelademande2}"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <serviceTask id="sid-1DA5EA96-625E-41BE-B290-68CFAA7F7FB8" name="validerdeamnde2" activiti:delegateExpression="${validatebouton2}"></serviceTask>
+    <exclusiveGateway id="gateway4"></exclusiveGateway>
+    <serviceTask id="sid-FD907A11-D6AF-4056-99BD-2321CA3D2B5C" name="refuserdemand2 " activiti:delegateExpression="${refuserbouton2}"></serviceTask>
+    <endEvent id="endevent1"></endEvent>
+    <sequenceFlow id="sid-0F58841A-24EA-4FF4-95DD-3AB78C5A7781" sourceRef="mailtocollabrejected" targetRef="endevent1"></sequenceFlow>
+    <sequenceFlow id="flow0" name="flow0" sourceRef="sid-96A7E3FE-99EF-48EC-A17E-C71BDED337BF" targetRef="gateway1"></sequenceFlow>
+    <serviceTask id="sid-117649C6-8897-4F35-9D85-83A1EA9B3FEC" name="mailtocollab2accepted" activiti:delegateExpression="${mailtocollab2accepted}"></serviceTask>
+    <sequenceFlow id="sid-A266A0B0-EC67-4D46-A855-28015DEE8B79" sourceRef="sid-1DA5EA96-625E-41BE-B290-68CFAA7F7FB8" targetRef="sid-117649C6-8897-4F35-9D85-83A1EA9B3FEC"></sequenceFlow>
+    <sequenceFlow id="sid-CF61BAF4-F1F5-419B-B2A4-AA947B2A1386" name="mailtoollab2fin" sourceRef="sid-117649C6-8897-4F35-9D85-83A1EA9B3FEC" targetRef="endevent1"></sequenceFlow>
+    <serviceTask id="sid-B1BE78C6-EF2D-447E-A067-284DD2D837B8" name="mailtocollabrefusedfin" activiti:delegateExpression="${mailtocollabrefusedfin}"></serviceTask>
+    <sequenceFlow id="sid-7195880F-1A2D-4962-9461-FA102ECE5BB4" sourceRef="sid-FD907A11-D6AF-4056-99BD-2321CA3D2B5C" targetRef="sid-B1BE78C6-EF2D-447E-A067-284DD2D837B8"></sequenceFlow>
+    <sequenceFlow id="sid-7FF9AA4D-4F1B-43E8-BEB0-89AA5BB4820A" sourceRef="sid-B1BE78C6-EF2D-447E-A067-284DD2D837B8" targetRef="endevent1"></sequenceFlow>
+    <intermediateCatchEvent id="waitForCondition" name="waitForCondition">
+      <signalEventDefinition signalRef="notificationSignal"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="sid-B1C24F2F-435E-4D49-A3FD-39D73C4336F6" name="catchtodecsion" sourceRef="waitForCondition" targetRef="sid-71B22EF4-E49B-4537-AE04-E1EF253F20B7"></sequenceFlow>
+    <sequenceFlow id="sid-465F47B3-17B9-4AC8-AA98-04FFD7DD8296" name="mailtocatch" sourceRef="mailmanager1" targetRef="waitForCondition"></sequenceFlow>
+    <intermediateCatchEvent id="catchdeux" name="catchdeux">
+      <signalEventDefinition signalRef="notifSignal"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="decisionfalsedeux" name="decisionfalsedeux" sourceRef="gateway4" targetRef="sid-FD907A11-D6AF-4056-99BD-2321CA3D2B5C">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision2 == false}]]></conditionExpression>
+    </sequenceFlow>
+    <parallelGateway id="parallec"></parallelGateway>
+    <serviceTask id="mailtomanagerexcep" name="mailtomanagerexcep" activiti:delegateExpression="${mailtomanageresxrp}"></serviceTask>
+    <serviceTask id="mailtogestnew" name="mailtogest new exep leave" activiti:delegateExpression="${mailtogest}"></serviceTask>
+    <parallelGateway id="parallea"></parallelGateway>
+    <userTask id="gestvalidateOrRefuse" name="gest validateOrrefuse" activiti:initiator="gestionnaire">
+      <extensionElements>
+        <activiti:formProperty id="decision" type="boolean"></activiti:formProperty>
+        <activiti:formProperty id="missingAttachment" type="boolean"></activiti:formProperty>
+        <activiti:formProperty id="validator_name" type="string"></activiti:formProperty>
+        <activiti:taskListener event="complete" delegateExpression="${initiateurgestionnaire}"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <exclusiveGateway id="exclusivea"></exclusiveGateway>
+    <exclusiveGateway id="excslusiveb"></exclusiveGateway>
+    <exclusiveGateway id="exclsuived"></exclusiveGateway>
+    <exclusiveGateway id="exclusivee"></exclusiveGateway>
+    <sequenceFlow id="sid-115BA5E0-C5B3-4A9A-8D2B-DD3899426C7E" name="descisionflase" sourceRef="validateorefuse" targetRef="mailtocollabrejected">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="decisiontruedeux" name="decisiontruedeux" sourceRef="gateway4" targetRef="sid-1DA5EA96-625E-41BE-B290-68CFAA7F7FB8">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision2 == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="manager2refuseoraccept" name="deuxtogateway" sourceRef="managerdeuxacceptorrefuse" targetRef="gateway4"></sequenceFlow>
+    <serviceTask id="maitocollabValidatedWithJustif" name="MailToCollabValidatedWithJustif" activiti:delegateExpression="${mailToCollabValidatedWithJustif}"></serviceTask>
+    <parallelGateway id="parallele"></parallelGateway>
+    <serviceTask id="MailToMangerValidatedWithJustif" name="MailToMangerValidatedWithJustif" activiti:delegateExpression="${mailToMangerValidatedWithJustif}"></serviceTask>
+    <parallelGateway id="parallelf"></parallelGateway>
+    <endEvent id="endWithJustif"></endEvent>
+    <parallelGateway id="parallelIi"></parallelGateway>
+    <serviceTask id="MailToCollabRefusedWithJustif" name="MailToCollabRefusedWithJustif" activiti:delegateExpression="${MailToCollabRefusedWithJustif}"></serviceTask>
+    <serviceTask id="MailToManagerRefusedWithJustif" name="MailToManagerRefusedWithJustif" activiti:delegateExpression="${MailToManagerRefusedWithJustif}"></serviceTask>
+    <parallelGateway id="sid-C26D364A-3B1D-4220-93DA-69F96485C6E7"></parallelGateway>
+    <endEvent id="endRefused"></endEvent>
+    <sequenceFlow id="MailToManagerRefusedWithJustifendevent" sourceRef="sid-C26D364A-3B1D-4220-93DA-69F96485C6E7" targetRef="endRefused"></sequenceFlow>
+    <userTask id="UpdateOuAjoutNewJustificatif" name="UpdateOuAjoutNewJustificatf">
+      <extensionElements>
+        <activiti:formProperty id="imagepublicnewcid" type="string"></activiti:formProperty>
+        <activiti:formProperty id="passthrough" type="boolean"></activiti:formProperty>
+        <activiti:taskListener event="create" delegateExpression="${verificationDesJustificatifsTaille}"></activiti:taskListener>
+        <activiti:taskListener event="create" delegateExpression="${initiateurcollabwithjustif}"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <parallelGateway id="sid-0EBE4C4A-ABF2-4C21-9C56-8D78C14FFA5A"></parallelGateway>
+    <serviceTask id="mailTocollabWithoutjustof" name="System - Mail to Collab - Request without justif validated by Payroll Expert " activiti:delegateExpression="${mailToCollabValidatedWithoutJustif}"></serviceTask>
+    <serviceTask id="MailToManagerValidatedWithoutJustif" name="System - Mail to Manager - Request without justif validated by Payroll Expert" activiti:delegateExpression="${mailToManagerValidatedWithoutJustif}"></serviceTask>
+    <parallelGateway id="sid-60E28BFC-D660-4950-81DD-F6C7E1E32283"></parallelGateway>
+    <exclusiveGateway id="exclusiveaa"></exclusiveGateway>
+    <sequenceFlow id="floee" sourceRef="catccheventwithoutjustif" targetRef="exclusiveaa"></sequenceFlow>
+    <userTask id="CollabUpdateAttachement" name="CollabUpdateAttachement">
+      <extensionElements>
+        <activiti:taskListener event="create" delegateExpression="${verifiersizejustif}"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <serviceTask id="GestionnaireManageNewAttachemnt" name="GestionnaireManageNewAttachemnt" activiti:delegateExpression="${ManageNewAttachementEtMiseAJouretTaille}"></serviceTask>
+    <exclusiveGateway id="sid-2CE1B12A-F031-4F27-83BC-477C29DED6A1"></exclusiveGateway>
+    <sequenceFlow id="Manage" sourceRef="GestionnaireManageNewAttachemnt" targetRef="sid-2CE1B12A-F031-4F27-83BC-477C29DED6A1"></sequenceFlow>
+    <exclusiveGateway id="sid-EEFF61A9-CC23-43AA-A9D4-AA466B604C8E"></exclusiveGateway>
+    <intermediateCatchEvent id="timer" name="timer">
+      <timerEventDefinition>
+        <timeCycle>R3/PT1H</timeCycle>
+      </timerEventDefinition>
+    </intermediateCatchEvent>
+    <parallelGateway id="parallelle"></parallelGateway>
+    <sequenceFlow id="floaz" sourceRef="sid-EEFF61A9-CC23-43AA-A9D4-AA466B604C8E" targetRef="parallelle"></sequenceFlow>
+    <serviceTask id="MailToCollabAskAgainforJustif" name="Mail To collab Ask again for jusrtig" activiti:delegateExpression="${MailToCollabAskAgainForJustif}"></serviceTask>
+    <sequenceFlow id="AskAgainforjustif" sourceRef="parallelle" targetRef="MailToCollabAskAgainforJustif"></sequenceFlow>
+    <exclusiveGateway id="sid-66C812F3-DC51-43DD-8DD9-E892FDCB14F0"></exclusiveGateway>
+    <sequenceFlow id="triggered" sourceRef="MailToCollabAskAgainforJustif" targetRef="sid-66C812F3-DC51-43DD-8DD9-E892FDCB14F0"></sequenceFlow>
+    <endEvent id="sid-39A579F2-49D3-4392-8963-434443A8918E"></endEvent>
+    <sequenceFlow id="sid-59CAD4FE-F8F4-48C8-8C29-FE7EFC520450" sourceRef="timer" targetRef="sid-EEFF61A9-CC23-43AA-A9D4-AA466B604C8E">
+      <extensionElements>
+        <activiti:executionListener event="start" expression="${execution.setVariable('timerTriggered', true)}"></activiti:executionListener>
+      </extensionElements>
+    </sequenceFlow>
+    <exclusiveGateway id="sid-E58A825C-4F9A-4AB4-82A0-7CEB220F1DBE"></exclusiveGateway>
+    <sequenceFlow id="flowpp" sourceRef="CollabUpdateAttachement" targetRef="sid-E58A825C-4F9A-4AB4-82A0-7CEB220F1DBE"></sequenceFlow>
+    <sequenceFlow id="expertIsNotReminding" sourceRef="sid-E58A825C-4F9A-4AB4-82A0-7CEB220F1DBE" targetRef="GestionnaireManageNewAttachemnt">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${hasReminded == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="ExpertIsreminding" name="Expert Is reminding" sourceRef="sid-E58A825C-4F9A-4AB4-82A0-7CEB220F1DBE" targetRef="sid-EEFF61A9-CC23-43AA-A9D4-AA466B604C8E">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${hasReminded == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="missingattachementtrue" name="Missing Attachemnt true" sourceRef="sid-2CE1B12A-F031-4F27-83BC-477C29DED6A1" targetRef="sid-EEFF61A9-CC23-43AA-A9D4-AA466B604C8E">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${missingAttachment == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flown" sourceRef="parallelf" targetRef="endWithJustif"></sequenceFlow>
+    <sequenceFlow id="flowivalidated" sourceRef="parallele" targetRef="maitocollabValidatedWithJustif"></sequenceFlow>
+    <sequenceFlow id="flowll" sourceRef="parallele" targetRef="MailToMangerValidatedWithJustif"></sequenceFlow>
+    <sequenceFlow id="flowl" sourceRef="maitocollabValidatedWithJustif" targetRef="parallelf"></sequenceFlow>
+    <sequenceFlow id="flowm" sourceRef="MailToMangerValidatedWithJustif" targetRef="parallelf"></sequenceFlow>
+    <sequenceFlow id="flowcc" sourceRef="MailToManagerValidatedWithoutJustif" targetRef="sid-60E28BFC-D660-4950-81DD-F6C7E1E32283"></sequenceFlow>
+    <sequenceFlow id="flowape" sourceRef="sid-0EBE4C4A-ABF2-4C21-9C56-8D78C14FFA5A" targetRef="MailToManagerValidatedWithoutJustif"></sequenceFlow>
+    <sequenceFlow id="flowaa" sourceRef="sid-0EBE4C4A-ABF2-4C21-9C56-8D78C14FFA5A" targetRef="mailTocollabWithoutjustof"></sequenceFlow>
+    <sequenceFlow id="flowbbbb" sourceRef="mailTocollabWithoutjustof" targetRef="sid-60E28BFC-D660-4950-81DD-F6C7E1E32283"></sequenceFlow>
+    <sequenceFlow id="MailTocollabRefusedWithJustifs" sourceRef="parallelIi" targetRef="MailToCollabRefusedWithJustif"></sequenceFlow>
+    <sequenceFlow id="MailTocollabRefusedWithJustifend" sourceRef="MailToCollabRefusedWithJustif" targetRef="sid-C26D364A-3B1D-4220-93DA-69F96485C6E7"></sequenceFlow>
+    <sequenceFlow id="MailToManagerRefusedWithJustifend" sourceRef="MailToManagerRefusedWithJustif" targetRef="sid-C26D364A-3B1D-4220-93DA-69F96485C6E7"></sequenceFlow>
+    <sequenceFlow id="MailToManagerRefusedWithJustifs" sourceRef="parallelIi" targetRef="MailToManagerRefusedWithJustif"></sequenceFlow>
+    <sequenceFlow id="flowc" sourceRef="mailtomanagerexcep" targetRef="parallea"></sequenceFlow>
+    <sequenceFlow id="flowb" sourceRef="parallec" targetRef="mailtogestnew"></sequenceFlow>
+    <sequenceFlow id="flowk" sourceRef="UpdateOuAjoutNewJustificatif" targetRef="exclsuived"></sequenceFlow>
+    <sequenceFlow id="flowg" name="Attachment validated or request refused" sourceRef="exclusivea" targetRef="excslusiveb">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision == false || missingAttachment == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="MISSINGATTACHEMETFALSE" name="Missing Attachement False" sourceRef="sid-2CE1B12A-F031-4F27-83BC-477C29DED6A1" targetRef="gestvalidateOrRefuse">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${missingAttachment == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="dnOk" name="DNOK" sourceRef="exclsuived" targetRef="exclusivee">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${passthrough==true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="triggeredReminderTrue" name="Timer has reminded" sourceRef="sid-66C812F3-DC51-43DD-8DD9-E892FDCB14F0" targetRef="sid-39A579F2-49D3-4392-8963-434443A8918E">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${timerTriggered == true && hasReminded == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="expertTriggeredReminder" name="Exxpert triigered reminder" sourceRef="sid-66C812F3-DC51-43DD-8DD9-E892FDCB14F0" targetRef="exclusiveaa">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${hasReminded == true && timerTriggered == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="dnKo" name="DNKO" sourceRef="exclsuived" targetRef="gestvalidateOrRefuse">
+      <extensionElements>
+        <activiti:executionListener event="end" delegateExpression="${updatedemande}"></activiti:executionListener>
+      </extensionElements>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${passthrough==false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="ValidatedWithJuustif" name="ValidatedWithJustif" sourceRef="exclusivee" targetRef="parallele">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision==true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="RefusedWithJustif" name="RefusedWithJustif" sourceRef="exclusivee" targetRef="parallelIi">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision==false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flowa" sourceRef="parallec" targetRef="mailtomanagerexcep"></sequenceFlow>
+    <sequenceFlow id="exeptionnel" name="Exceptionnel" sourceRef="gateway1" targetRef="parallec">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${motif =="exceptionnel"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flowe" sourceRef="exceptionnelcatch" targetRef="gestvalidateOrRefuse"></sequenceFlow>
+    <sequenceFlow id="parallletosignel" sourceRef="parallea" targetRef="exceptionnelcatch"></sequenceFlow>
+    <intermediateCatchEvent id="exceptionnelcatch">
+      <signalEventDefinition signalRef="notifSignall"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <intermediateCatchEvent id="catccheventwithoutjustif">
+      <signalEventDefinition signalRef="notifSignalExc"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="paralleletocatchevent" sourceRef="sid-60E28BFC-D660-4950-81DD-F6C7E1E32283" targetRef="catccheventwithoutjustif"></sequenceFlow>
+    <sequenceFlow id="catchmaangerdeux" name="catchmanagerdeux" sourceRef="catchdeux" targetRef="managerdeuxacceptorrefuse"></sequenceFlow>
+    <sequenceFlow id="validatecatch" name="validateatch" sourceRef="mailmanagerdeux" targetRef="catchdeux"></sequenceFlow>
+    <sequenceFlow id="validated" name="decisiontrue" sourceRef="validateorefuse" targetRef="mailmanagerdeux">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-BE5696F7-1D33-4068-8655-2250849E48D8" sourceRef="sid-71B22EF4-E49B-4537-AE04-E1EF253F20B7" targetRef="validateorefuse"></sequenceFlow>
+    <sequenceFlow id="flowd" sourceRef="mailtogestnew" targetRef="parallea"></sequenceFlow>
+    <sequenceFlow id="AttachmentRefusedAndMissing" name="Attachment refused and missing" sourceRef="exclusivea" targetRef="sid-0EBE4C4A-ABF2-4C21-9C56-8D78C14FFA5A">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision == true && missingAttachment == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flowf" sourceRef="gestvalidateOrRefuse" targetRef="exclusivea"></sequenceFlow>
+    <intermediateCatchEvent id="catchwithjustif">
+      <signalEventDefinition signalRef="notifWithjustif"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="flowupdate" sourceRef="catchwithjustif" targetRef="UpdateOuAjoutNewJustificatif"></sequenceFlow>
+    <intermediateCatchEvent id="catchwithoutjustif">
+      <signalEventDefinition signalRef="notifWithoutjustif"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="flowbb" sourceRef="catchwithoutjustif" targetRef="CollabUpdateAttachement">
+      <extensionElements>
+        <activiti:executionListener event="start" expression="${execution.setVariable('hasResumed', false)}"></activiti:executionListener>
+        <activiti:executionListener event="start" expression="${execution.setVariable('hasReminded', false)}"></activiti:executionListener>
+      </extensionElements>
+    </sequenceFlow>
+    <sequenceFlow id="flowWithoutjustif" sourceRef="exclusiveaa" targetRef="catchwithoutjustif"></sequenceFlow>
+    <sequenceFlow id="flowaccepte" sourceRef="excslusiveb" targetRef="exclsuived">
+      <extensionElements>
+        <activiti:executionListener event="start" delegateExpression="${passthrough}"></activiti:executionListener>
+      </extensionElements>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision == true && missingAttachment == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flowi" sourceRef="excslusiveb" targetRef="catchwithjustif">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${decision == false && missingAttachment == true || decision==false &&missingAttachment==false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="mailmanager1flow" name="Regulier" sourceRef="gateway1" targetRef="mailmanager1">
+      <extensionElements>
+        <activiti:executionListener event="take" delegateExpression="${deadlinedutraitement}"></activiti:executionListener>
+      </extensionElements>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${motif =="regulier" && (rolesoumetter == "Role_collaborateur" || rolesoumetter == "Role_manager" || rolesoumetter == "Role_gestionnaire") }]]></conditionExpression>
+    </sequenceFlow>
+    <intermediateCatchEvent id="reguliermanagerdeux">
+      <signalEventDefinition signalRef="notifReguliermanager"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="rolesoumetteur" sourceRef="gateway1" targetRef="reguliermanagerdeux">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${motif =="regulier" && rolesoumetter == "Role_manager2"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flowcath" sourceRef="reguliermanagerdeux" targetRef="managerdeuxacceptorrefuse"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_my-process">
+    <bpmndi:BPMNPlane bpmnElement="my-process" id="BPMNPlane_my-process">
+      <bpmndi:BPMNShape bpmnElement="startEvent1" id="BPMNShape_startEvent1">
+        <omgdc:Bounds height="30.0" width="30.0" x="28.22514731777349" y="323.87588424263237"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-96A7E3FE-99EF-48EC-A17E-C71BDED337BF" id="BPMNShape_sid-96A7E3FE-99EF-48EC-A17E-C71BDED337BF">
+        <omgdc:Bounds height="80.0" width="100.00000000000006" x="84.6754419533205" y="298.8758846399966"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailmanager1" id="BPMNShape_mailmanager1">
+        <omgdc:Bounds height="80.0" width="99.99999999999989" x="365.15205664489383" y="28.22514731777349"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="gateway1" id="BPMNShape_gateway1">
+        <omgdc:Bounds height="40.0" width="40.0" x="225.80117854218798" y="318.87588076369417"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailmanagerdeux" id="BPMNShape_mailmanagerdeux">
+        <omgdc:Bounds height="80.0" width="100.0" x="790.304124897658" y="28.225147317773498"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-71B22EF4-E49B-4537-AE04-E1EF253F20B7" id="BPMNShape_sid-71B22EF4-E49B-4537-AE04-E1EF253F20B7">
+        <omgdc:Bounds height="80.00000000000006" width="100.00000000000011" x="649.178367671967" y="28.22514731777349"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="validateorefuse" id="BPMNShape_validateorefuse">
+        <omgdc:Bounds height="40.0" width="40.0" x="733.8538185978193" y="225.80117854218798"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailtocollabrejected" id="BPMNShape_mailtocollabrejected">
+        <omgdc:Bounds height="80.0" width="100.00000000000011" x="851.7876065363195" y="282.25147317773497"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="managerdeuxacceptorrefuse" id="BPMNShape_managerdeuxacceptorrefuse">
+        <omgdc:Bounds height="79.99999999999999" width="99.99999999999977" x="1016.1052711387308" y="56.450294635546996"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-1DA5EA96-625E-41BE-B290-68CFAA7F7FB8" id="BPMNShape_sid-1DA5EA96-625E-41BE-B290-68CFAA7F7FB8">
+        <omgdc:Bounds height="82.54776816033022" width="104.8865346671048" x="1284.5565956920957" y="56.450294635546996"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="gateway4" id="BPMNShape_gateway4">
+        <omgdc:Bounds height="40.0" width="40.0" x="1159.0058742890387" y="112.90058927109399"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-FD907A11-D6AF-4056-99BD-2321CA3D2B5C" id="BPMNShape_sid-FD907A11-D6AF-4056-99BD-2321CA3D2B5C">
+        <omgdc:Bounds height="80.00000000000003" width="100.00000000000023" x="1129.0058747658757" y="205.8011752710665"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="28.0" width="28.0" x="1524.157955159769" y="310.4766204955085"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-117649C6-8897-4F35-9D85-83A1EA9B3FEC" id="BPMNShape_sid-117649C6-8897-4F35-9D85-83A1EA9B3FEC">
+        <omgdc:Bounds height="80.0" width="100.0" x="1467.7076371956387" y="56.45029373829379"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-B1BE78C6-EF2D-447E-A067-284DD2D837B8" id="BPMNShape_sid-B1BE78C6-EF2D-447E-A067-284DD2D837B8">
+        <omgdc:Bounds height="80.00000000000006" width="100.0" x="1286.999842569338" y="205.8011719999452"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="waitForCondition" id="BPMNShape_waitForCondition">
+        <omgdc:Bounds height="30.0" width="30.0" x="547.8344261781457" y="53.22514647178262"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="catchdeux" id="BPMNShape_catchdeux">
+        <omgdc:Bounds height="30.0" width="30.0" x="931.4298614865255" y="53.225146471782665"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="parallec" id="BPMNShape_parallec">
+        <omgdc:Bounds height="40.0" width="40.0" x="225.80117495317518" y="451.60234990635036"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailtomanagerexcep" id="BPMNShape_mailtomanagerexcep">
+        <omgdc:Bounds height="80.0" width="100.0" x="299.99999523162876" y="309.74095213918895"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailtogestnew" id="BPMNShape_mailtogestnew">
+        <omgdc:Bounds height="80.0" width="100.0" x="282.2514642052031" y="431.6023430462163"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="parallea" id="BPMNShape_parallea">
+        <omgdc:Bounds height="40.00000000000006" width="40.0" x="395.1520561680566" y="479.8275044021495"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="gestvalidateOrRefuse" id="BPMNShape_gestvalidateOrRefuse">
+        <omgdc:Bounds height="80.0" width="100.00000000000017" x="479.82748914884525" y="348.45857669518705"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivea" id="BPMNShape_exclusivea">
+        <omgdc:Bounds height="40.0" width="40.0" x="649.178367671967" y="564.5029463554699"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="excslusiveb" id="BPMNShape_excslusiveb">
+        <omgdc:Bounds height="40.0" width="40.0" x="733.853806933528" y="564.502937382938"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclsuived" id="BPMNShape_exclsuived">
+        <omgdc:Bounds height="40.0" width="40.000000000000114" x="1016.1052872892882" y="564.5029463554699"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivee" id="BPMNShape_exclusivee">
+        <omgdc:Bounds height="39.99999999999994" width="40.0" x="1100.7807278967289" y="508.05263556936535"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="maitocollabValidatedWithJustif" id="BPMNShape_maitocollabValidatedWithJustif">
+        <omgdc:Bounds height="80.0" width="100.0" x="1326.5819028499043" y="348.45857669518705"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="parallele" id="BPMNShape_parallele">
+        <omgdc:Bounds height="39.99999999999994" width="40.0" x="1270.1316292998074" y="508.0526436446442"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="MailToMangerValidatedWithJustif" id="BPMNShape_MailToMangerValidatedWithJustif">
+        <omgdc:Bounds height="80.00000000000006" width="100.0" x="1326.5818817644545" y="425.8938159607842"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="parallelf" id="BPMNShape_parallelf">
+        <omgdc:Bounds height="40.0" width="40.0" x="1439.4825132064484" y="530.2777906091585"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endWithJustif" id="BPMNShape_endWithJustif">
+        <omgdc:Bounds height="28.0" width="28.0" x="1524.157955159769" y="536.2777820852532"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="parallelIi" id="BPMNShape_parallelIi">
+        <omgdc:Bounds height="40.0" width="40.0" x="1185.4561685041697" y="733.8538302621109"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="MailToCollabRefusedWithJustif" id="BPMNShape_MailToCollabRefusedWithJustif">
+        <omgdc:Bounds height="80.0" width="100.0" x="1270.1316091116105" y="580.7642944919784"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="MailToManagerRefusedWithJustif" id="BPMNShape_MailToManagerRefusedWithJustif">
+        <omgdc:Bounds height="80.0" width="100.0" x="1270.1315889234138" y="713.8538189157108"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-C26D364A-3B1D-4220-93DA-69F96485C6E7" id="BPMNShape_sid-C26D364A-3B1D-4220-93DA-69F96485C6E7">
+        <omgdc:Bounds height="40.0" width="40.0" x="1439.4824903264919" y="762.0789775798845"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endRefused" id="BPMNShape_endRefused">
+        <omgdc:Bounds height="28.0" width="28.0" x="1532.1843644352368" y="768.0789653715989"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="UpdateOuAjoutNewJustificatif" id="BPMNShape_UpdateOuAjoutNewJustificatif">
+        <omgdc:Bounds height="68.70994161542274" width="76.11817044760596" x="851.7875250164914" y="389.9999938011174"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-0EBE4C4A-ABF2-4C21-9C56-8D78C14FFA5A" id="BPMNShape_sid-0EBE4C4A-ABF2-4C21-9C56-8D78C14FFA5A">
+        <omgdc:Bounds height="40.0" width="40.0" x="23.225146948619738" y="800.18284389271"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailTocollabWithoutjustof" id="BPMNShape_mailTocollabWithoutjustof">
+        <omgdc:Bounds height="80.0" width="99.99999999999994" x="84.67544060744075" y="713.8538189157108"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="MailToManagerValidatedWithoutJustif" id="BPMNShape_MailToManagerValidatedWithoutJustif">
+        <omgdc:Bounds height="80.00000000000011" width="100.00000000000001" x="96.21708029775532" y="891.6323117661626"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-60E28BFC-D660-4950-81DD-F6C7E1E32283" id="BPMNShape_sid-60E28BFC-D660-4950-81DD-F6C7E1E32283">
+        <omgdc:Bounds height="40.0" width="40.0" x="225.80117495317518" y="800.1828311741472"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusiveaa" id="BPMNShape_exclusiveaa">
+        <omgdc:Bounds height="40.0" width="40.0" x="329.9999899864205" y="794.7304510283335"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="CollabUpdateAttachement" id="BPMNShape_CollabUpdateAttachement">
+        <omgdc:Bounds height="80.0" width="100.0" x="360.6520567164193" y="713.8538189157108"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="GestionnaireManageNewAttachemnt" id="BPMNShape_GestionnaireManageNewAttachemnt">
+        <omgdc:Bounds height="80.0" width="100.0" x="675.5208941111981" y="675.5208941111981"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-2CE1B12A-F031-4F27-83BC-477C29DED6A1" id="BPMNShape_sid-2CE1B12A-F031-4F27-83BC-477C29DED6A1">
+        <omgdc:Bounds height="40.0" width="40.0" x="869.8466237790916" y="635.7843709281865"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-EEFF61A9-CC23-43AA-A9D4-AA466B604C8E" id="BPMNShape_sid-EEFF61A9-CC23-43AA-A9D4-AA466B604C8E">
+        <omgdc:Bounds height="40.0" width="40.0" x="542.8344175500255" y="794.7304636602331"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="timer" id="BPMNShape_timer">
+        <omgdc:Bounds height="31.0" width="31.0" x="399.65204981575874" y="774.8622020687274"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="parallelle" id="BPMNShape_parallelle">
+        <omgdc:Bounds height="40.0" width="40.0" x="542.8344175500255" y="855.3072820051397"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="MailToCollabAskAgainforJustif" id="BPMNShape_MailToCollabAskAgainforJustif">
+        <omgdc:Bounds height="40.0" width="50.0" x="644.1783471940898" y="854.3352348554586"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-66C812F3-DC51-43DD-8DD9-E892FDCB14F0" id="BPMNShape_sid-66C812F3-DC51-43DD-8DD9-E892FDCB14F0">
+        <omgdc:Bounds height="40.0" width="40.0" x="754.9939404772215" y="855.3072684103976"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-39A579F2-49D3-4392-8963-434443A8918E" id="BPMNShape_sid-39A579F2-49D3-4392-8963-434443A8918E">
+        <omgdc:Bounds height="28.0" width="28.0" x="875.8466236837243" y="861.3072683150302"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-E58A825C-4F9A-4AB4-82A0-7CEB220F1DBE" id="BPMNShape_sid-E58A825C-4F9A-4AB4-82A0-7CEB220F1DBE">
+        <omgdc:Bounds height="40.0" width="40.0" x="542.8344089219054" y="733.6945071073344"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exceptionnelcatch" id="BPMNShape_exceptionnelcatch">
+        <omgdc:Bounds height="30.0" width="30.0" x="464.9999926090246" y="456.602342648852"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="catccheventwithoutjustif" id="BPMNShape_catccheventwithoutjustif">
+        <omgdc:Bounds height="30.0" width="30.0" x="274.99999101956763" y="823.9999735673291"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="catchwithjustif" id="BPMNShape_catchwithjustif">
+        <omgdc:Bounds height="30.0" width="30.0" x="794.9999763071544" y="465.999971777202"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="catchwithoutjustif" id="BPMNShape_catchwithoutjustif">
+        <omgdc:Bounds height="30.0" width="30.0" x="374.99998882412945" y="842.9999493062519"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="reguliermanagerdeux" id="BPMNShape_reguliermanagerdeux">
+        <omgdc:Bounds height="30.0" width="30.0" x="931.4298337277534" y="0.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="triggered" id="BPMNEdge_triggered">
+        <omgdi:waypoint x="694.1783471940898" y="874.5648875760028"></omgdi:waypoint>
+        <omgdi:waypoint x="755.1759903239538" y="875.1252185636653"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-115BA5E0-C5B3-4A9A-8D2B-DD3899426C7E" id="BPMNEdge_sid-115BA5E0-C5B3-4A9A-8D2B-DD3899426C7E">
+        <omgdi:waypoint x="753.8921135475094" y="265.7628835924979"></omgdi:waypoint>
+        <omgdi:waypoint x="754.0" y="322.0"></omgdi:waypoint>
+        <omgdi:waypoint x="851.7876065363195" y="322.1663939266297"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowivalidated" id="BPMNEdge_flowivalidated">
+        <omgdi:waypoint x="1290.112849832319" y="508.0714231121326"></omgdi:waypoint>
+        <omgdi:waypoint x="1290.0" y="388.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1326.5819028499043" y="388.1937542091405"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="catchmaangerdeux" id="BPMNEdge_catchmaangerdeux">
+        <omgdi:waypoint x="961.4296414883612" y="68.14390672455798"></omgdi:waypoint>
+        <omgdi:waypoint x="988.0" y="68.0"></omgdi:waypoint>
+        <omgdi:waypoint x="988.0" y="96.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1016.1052711387308" y="96.16203327432135"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="missingattachementtrue" id="BPMNEdge_missingattachementtrue">
+        <omgdi:waypoint x="889.8659932536457" y="675.7650014536324"></omgdi:waypoint>
+        <omgdi:waypoint x="890.0" y="814.0"></omgdi:waypoint>
+        <omgdi:waypoint x="582.7898629621371" y="814.6859090723448"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="paralleletocatchevent" id="BPMNEdge_paralleletocatchevent">
+        <omgdi:waypoint x="259.8289917623876" y="826.1550143649348"></omgdi:waypoint>
+        <omgdi:waypoint x="276.1986994710446" y="833.1242309255291"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow0" id="BPMNEdge_flow0">
+        <omgdi:waypoint x="184.67544195332056" y="338.8758828958901"></omgdi:waypoint>
+        <omgdi:waypoint x="225.80117923983056" y="338.87588146133675"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="decisiontruedeux" id="BPMNEdge_decisiontruedeux">
+        <omgdi:waypoint x="1198.7194943376069" y="132.61420931966217"></omgdi:waypoint>
+        <omgdi:waypoint x="1241.0" y="132.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1241.0" y="109.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1284.5565956920957" y="103.88398865064173"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="58.22514731777349" y="338.87588430780943"></omgdi:waypoint>
+        <omgdi:waypoint x="84.6754419533205" y="338.87588442273966"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-A266A0B0-EC67-4D46-A855-28015DEE8B79" id="BPMNEdge_sid-A266A0B0-EC67-4D46-A855-28015DEE8B79">
+        <omgdi:waypoint x="1389.4431303592005" y="97.30683540999749"></omgdi:waypoint>
+        <omgdi:waypoint x="1428.0" y="97.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1428.0" y="96.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1467.7076371956387" y="96.19931525286574"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="mailmanager1flow" id="BPMNEdge_mailmanager1flow">
+        <omgdi:waypoint x="245.81584766890344" y="318.8905498904096"></omgdi:waypoint>
+        <omgdi:waypoint x="246.0" y="68.0"></omgdi:waypoint>
+        <omgdi:waypoint x="365.15205664489383" y="68.15859556480066"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-CF61BAF4-F1F5-419B-B2A4-AA947B2A1386" id="BPMNEdge_sid-CF61BAF4-F1F5-419B-B2A4-AA947B2A1386">
+        <omgdi:waypoint x="1521.2949980508445" y="136.4502937382938"></omgdi:waypoint>
+        <omgdi:waypoint x="1536.90739804337" y="310.53258568134424"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="floee" id="BPMNEdge_floee">
+        <omgdi:waypoint x="297.63094140427023" y="826.0860819685039"></omgdi:waypoint>
+        <omgdi:waypoint x="303.0" y="817.0"></omgdi:waypoint>
+        <omgdi:waypoint x="330.9212687398495" y="815.6517297817626"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowpp" id="BPMNEdge_flowpp">
+        <omgdi:waypoint x="460.6520567164193" y="753.8014765100154"></omgdi:waypoint>
+        <omgdi:waypoint x="542.8553239892847" y="753.7154221747137"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowll" id="BPMNEdge_flowll">
+        <omgdi:waypoint x="1290.0720473304614" y="508.1122256139901"></omgdi:waypoint>
+        <omgdi:waypoint x="1290.0" y="484.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1326.5818817644545" y="476.34992044259343"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="MISSINGATTACHEMETFALSE" id="BPMNEdge_MISSINGATTACHEMETFALSE">
+        <omgdi:waypoint x="889.9526280372104" y="635.8903751863053"></omgdi:waypoint>
+        <omgdi:waypoint x="890.0" y="627.0"></omgdi:waypoint>
+        <omgdi:waypoint x="579.8274891488454" y="421.57346138490084"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="dnKo" id="BPMNEdge_dnKo">
+        <omgdi:waypoint x="1036.0963498011827" y="564.5118838435754"></omgdi:waypoint>
+        <omgdi:waypoint x="1036.0" y="349.0"></omgdi:waypoint>
+        <omgdi:waypoint x="579.8274891488454" y="384.56083671037084"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowa" id="BPMNEdge_flowa">
+        <omgdi:waypoint x="255.01985316018533" y="460.8210281133605"></omgdi:waypoint>
+        <omgdi:waypoint x="315.7975907991621" y="389.74095213918895"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowb" id="BPMNEdge_flowb">
+        <omgdi:waypoint x="265.80117336610505" y="471.6023483192802"></omgdi:waypoint>
+        <omgdi:waypoint x="282.2514642052031" y="471.60234701389186"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowc" id="BPMNEdge_flowc">
+        <omgdi:waypoint x="399.99999523162876" y="349.1709889970097"></omgdi:waypoint>
+        <omgdi:waypoint x="415.0" y="349.0"></omgdi:waypoint>
+        <omgdi:waypoint x="415.13191355173393" y="479.8476470184722"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowd" id="BPMNEdge_flowd">
+        <omgdi:waypoint x="332.2514642052031" y="471.6023430462163"></omgdi:waypoint>
+        <omgdi:waypoint x="373.0" y="471.0"></omgdi:waypoint>
+        <omgdi:waypoint x="373.0" y="499.0"></omgdi:waypoint>
+        <omgdi:waypoint x="395.53712497340086" y="499.4424355968053"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowe" id="BPMNEdge_flowe">
+        <omgdi:waypoint x="487.7107414910778" y="458.73593865714105"></omgdi:waypoint>
+        <omgdi:waypoint x="505.8557597145116" y="428.45857669518705"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-7195880F-1A2D-4962-9461-FA102ECE5BB4" id="BPMNEdge_sid-7195880F-1A2D-4962-9461-FA102ECE5BB4">
+        <omgdi:waypoint x="1229.005874765876" y="245.80117423586205"></omgdi:waypoint>
+        <omgdi:waypoint x="1286.999842569338" y="245.80117303514973"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowf" id="BPMNEdge_flowf">
+        <omgdi:waypoint x="529.6582177719963" y="428.45857669518705"></omgdi:waypoint>
+        <omgdi:waypoint x="529.0" y="584.0"></omgdi:waypoint>
+        <omgdi:waypoint x="649.2498691871393" y="584.4314448402976"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowg" id="BPMNEdge_flowg">
+        <omgdi:waypoint x="689.178365552691" y="584.502944236194"></omgdi:waypoint>
+        <omgdi:waypoint x="733.8538090528039" y="584.5029395022138"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="dnOk" id="BPMNEdge_dnOk">
+        <omgdi:waypoint x="1055.8707824845746" y="584.7374511601836"></omgdi:waypoint>
+        <omgdi:waypoint x="1078.0" y="585.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1078.0" y="528.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1100.8053047989872" y="528.0280586671068"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-BE5696F7-1D33-4068-8655-2250849E48D8" id="BPMNEdge_sid-BE5696F7-1D33-4068-8655-2250849E48D8">
+        <omgdi:waypoint x="699.1380072543486" y="108.22514731777355"></omgdi:waypoint>
+        <omgdi:waypoint x="699.0" y="245.0"></omgdi:waypoint>
+        <omgdi:waypoint x="734.1417275308385" y="245.5132696091689"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="AttachmentRefusedAndMissing" id="BPMNEdge_AttachmentRefusedAndMissing">
+        <omgdi:waypoint x="669.1165154417116" y="604.4410941252146"></omgdi:waypoint>
+        <omgdi:waypoint x="669.0" y="642.0"></omgdi:waypoint>
+        <omgdi:waypoint x="43.0" y="642.0"></omgdi:waypoint>
+        <omgdi:waypoint x="43.19990738983563" y="800.2080834514942"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowi" id="BPMNEdge_flowi">
+        <omgdi:waypoint x="760.9198183725746" y="571.5689488219846"></omgdi:waypoint>
+        <omgdi:waypoint x="788.0" y="522.0"></omgdi:waypoint>
+        <omgdi:waypoint x="789.0" y="510.0"></omgdi:waypoint>
+        <omgdi:waypoint x="801.202341252889" y="493.1491123826918"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="rolesoumetteur" id="BPMNEdge_rolesoumetteur">
+        <omgdi:waypoint x="245.09171101432113" y="319.58534829156105"></omgdi:waypoint>
+        <omgdi:waypoint x="234.0" y="18.0"></omgdi:waypoint>
+        <omgdi:waypoint x="931.4299667161658" y="15.063163555068021"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowk" id="BPMNEdge_flowk">
+        <omgdi:waypoint x="921.2220451698579" y="458.70993541654013"></omgdi:waypoint>
+        <omgdi:waypoint x="1026.5585837271738" y="574.0496499175844"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowl" id="BPMNEdge_flowl">
+        <omgdi:waypoint x="1426.5819028499043" y="388.18037523759216"></omgdi:waypoint>
+        <omgdi:waypoint x="1459.0" y="388.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1459.42322194253" y="530.3370818730768"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowaccepte" id="BPMNEdge_flowaccepte">
+        <omgdi:waypoint x="773.8538062977451" y="584.5029380187208"></omgdi:waypoint>
+        <omgdi:waypoint x="1016.105287925071" y="584.5029457196871"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowm" id="BPMNEdge_flowm">
+        <omgdi:waypoint x="1376.3051450316677" y="505.89381596078425"></omgdi:waypoint>
+        <omgdi:waypoint x="1376.0" y="550.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1439.5488431017577" y="550.2114607138491"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-7FF9AA4D-4F1B-43E8-BEB0-89AA5BB4820A" id="BPMNEdge_sid-7FF9AA4D-4F1B-43E8-BEB0-89AA5BB4820A">
+        <omgdi:waypoint x="1386.999842569338" y="265.3567960516957"></omgdi:waypoint>
+        <omgdi:waypoint x="1525.1197075184925" y="319.37719911218"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="manager2refuseoraccept" id="BPMNEdge_manager2refuseoraccept">
+        <omgdi:waypoint x="1116.1052711387306" y="96.1327148642581"></omgdi:waypoint>
+        <omgdi:waypoint x="1137.0" y="96.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1137.0" y="132.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1159.4256661788233" y="132.48079738130946"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="floaz" id="BPMNEdge_floaz">
+        <omgdi:waypoint x="562.8344175500255" y="834.7304636602331"></omgdi:waypoint>
+        <omgdi:waypoint x="562.8344175500255" y="855.3072820051397"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="RefusedWithJustif" id="BPMNEdge_RefusedWithJustif">
+        <omgdi:waypoint x="1120.8003788720428" y="548.0329845940514"></omgdi:waypoint>
+        <omgdi:waypoint x="1121.0" y="751.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1186.1098920873644" y="753.2001066789162"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-59CAD4FE-F8F4-48C8-8C29-FE7EFC520450" id="BPMNEdge_sid-59CAD4FE-F8F4-48C8-8C29-FE7EFC520450">
+        <omgdi:waypoint x="429.6878666392589" y="795.7436544074227"></omgdi:waypoint>
+        <omgdi:waypoint x="479.0" y="814.0"></omgdi:waypoint>
+        <omgdi:waypoint x="543.0071757091523" y="814.5577055011063"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="triggeredReminderTrue" id="BPMNEdge_triggeredReminderTrue">
+        <omgdi:waypoint x="794.9939404606146" y="875.3072683937907"></omgdi:waypoint>
+        <omgdi:waypoint x="875.8466236837243" y="875.307268326655"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowcc" id="BPMNEdge_flowcc">
+        <omgdi:waypoint x="196.21708029775533" y="931.3122606034372"></omgdi:waypoint>
+        <omgdi:waypoint x="245.0" y="931.0"></omgdi:waypoint>
+        <omgdi:waypoint x="245.65761880889815" y="840.0392750298702"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-0F58841A-24EA-4FF4-95DD-3AB78C5A7781" id="BPMNEdge_sid-0F58841A-24EA-4FF4-95DD-3AB78C5A7781">
+        <omgdi:waypoint x="951.7876065363196" y="322.42630433718375"></omgdi:waypoint>
+        <omgdi:waypoint x="1524.1580407436004" y="324.42766807011725"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowupdate" id="BPMNEdge_flowupdate">
+        <omgdi:waypoint x="822.234054628961" y="472.3208400455192"></omgdi:waypoint>
+        <omgdi:waypoint x="851.7875250164914" y="451.35494005086514"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="MailToManagerRefusedWithJustifendevent" id="BPMNEdge_MailToManagerRefusedWithJustifendevent">
+        <omgdi:waypoint x="1479.4824875103395" y="782.0789747637323"></omgdi:waypoint>
+        <omgdi:waypoint x="1532.184364435237" y="782.0789673429057"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="MailTocollabRefusedWithJustifend" id="BPMNEdge_MailTocollabRefusedWithJustifend">
+        <omgdi:waypoint x="1370.1316091116105" y="620.4891078612811"></omgdi:waypoint>
+        <omgdi:waypoint x="1459.0" y="620.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1459.4231293558134" y="762.1383385505629"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="validatecatch" id="BPMNEdge_validatecatch">
+        <omgdi:waypoint x="890.304124897658" y="68.225146919194"></omgdi:waypoint>
+        <omgdi:waypoint x="931.4298614865255" y="68.22514659135652"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flown" id="BPMNEdge_flown">
+        <omgdi:waypoint x="1479.4825110395957" y="550.2777884423059"></omgdi:waypoint>
+        <omgdi:waypoint x="1524.157955159769" y="550.2777836020502"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowbbbb" id="BPMNEdge_flowbbbb">
+        <omgdi:waypoint x="184.6754406074407" y="753.4668611429303"></omgdi:waypoint>
+        <omgdi:waypoint x="245.0" y="753.0"></omgdi:waypoint>
+        <omgdi:waypoint x="245.56547982462547" y="800.4185263026969"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="ValidatedWithJuustif" id="BPMNEdge_ValidatedWithJuustif">
+        <omgdi:waypoint x="1140.7807269430548" y="528.0526365230394"></omgdi:waypoint>
+        <omgdi:waypoint x="1270.1316302534815" y="528.0526426909701"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="validated" id="BPMNEdge_validated">
+        <omgdi:waypoint x="753.758235646154" y="225.89676149385323"></omgdi:waypoint>
+        <omgdi:waypoint x="753.0" y="68.0"></omgdi:waypoint>
+        <omgdi:waypoint x="790.304124897658" y="68.09620305652729"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-465F47B3-17B9-4AC8-AA98-04FFD7DD8296" id="BPMNEdge_sid-465F47B3-17B9-4AC8-AA98-04FFD7DD8296">
+        <omgdi:waypoint x="465.1520566448937" y="68.22514703135106"></omgdi:waypoint>
+        <omgdi:waypoint x="547.8344261781457" y="68.22514655770937"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="exeptionnel" id="BPMNEdge_exeptionnel">
+        <omgdi:waypoint x="245.80117800137458" y="358.87588022288077"></omgdi:waypoint>
+        <omgdi:waypoint x="245.80117549398858" y="451.60235044716376"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowbb" id="BPMNEdge_flowbb">
+        <omgdi:waypoint x="392.9176610834989" y="843.2864456926694"></omgdi:waypoint>
+        <omgdi:waypoint x="402.7200988741659" y="793.8538189157108"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="ExpertIsreminding" id="BPMNEdge_ExpertIsreminding">
+        <omgdi:waypoint x="562.8344117491303" y="773.6945042801095"></omgdi:waypoint>
+        <omgdi:waypoint x="562.8344147228006" y="794.730466487458"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="MailToManagerRefusedWithJustifs" id="BPMNEdge_MailToManagerRefusedWithJustifs">
+        <omgdi:waypoint x="1225.4561665252977" y="753.853828283239"></omgdi:waypoint>
+        <omgdi:waypoint x="1270.1315889234138" y="753.8538238628913"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="expertTriggeredReminder" id="BPMNEdge_expertTriggeredReminder">
+        <omgdi:waypoint x="774.9953383105017" y="895.3058705771174"></omgdi:waypoint>
+        <omgdi:waypoint x="775.0" y="962.0"></omgdi:waypoint>
+        <omgdi:waypoint x="351.0" y="962.0"></omgdi:waypoint>
+        <omgdi:waypoint x="350.13488079211567" y="834.5955602226384"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="Manage" id="BPMNEdge_Manage">
+        <omgdi:waypoint x="775.5208941111981" y="715.0830142007536"></omgdi:waypoint>
+        <omgdi:waypoint x="785.0" y="715.0"></omgdi:waypoint>
+        <omgdi:waypoint x="877.0653018165835" y="663.0030489656784"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="AskAgainforjustif" id="BPMNEdge_AskAgainforjustif">
+        <omgdi:waypoint x="582.6532614577599" y="875.126125912874"></omgdi:waypoint>
+        <omgdi:waypoint x="644.1783471940898" y="874.563749814642"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="parallletosignel" id="BPMNEdge_parallletosignel">
+        <omgdi:waypoint x="429.0868961377362" y="493.7623443718291"></omgdi:waypoint>
+        <omgdi:waypoint x="466.24630098067695" y="477.588657591479"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="expertIsNotReminding" id="BPMNEdge_expertIsNotReminding">
+        <omgdi:waypoint x="579.033393853109" y="749.893492038538"></omgdi:waypoint>
+        <omgdi:waypoint x="675.5208941111981" y="727.2531572281127"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowape" id="BPMNEdge_flowape">
+        <omgdi:waypoint x="43.18459538540038" y="840.1422923294907"></omgdi:waypoint>
+        <omgdi:waypoint x="43.0" y="931.0"></omgdi:waypoint>
+        <omgdi:waypoint x="96.21708029775532" y="931.3260098613139"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="decisionfalsedeux" id="BPMNEdge_decisionfalsedeux">
+        <omgdi:waypoint x="1179.005874373509" y="152.90058918662373"></omgdi:waypoint>
+        <omgdi:waypoint x="1179.0058745969354" y="205.8011752710665"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowaa" id="BPMNEdge_flowaa">
+        <omgdi:waypoint x="63.184942788036736" y="820.142639732127"></omgdi:waypoint>
+        <omgdi:waypoint x="134.0" y="820.0"></omgdi:waypoint>
+        <omgdi:waypoint x="134.266987332365" y="793.8538189157108"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="MailToManagerRefusedWithJustifend" id="BPMNEdge_MailToManagerRefusedWithJustifend">
+        <omgdi:waypoint x="1370.1315889234138" y="753.3447959684827"></omgdi:waypoint>
+        <omgdi:waypoint x="1404.0" y="753.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1404.0" y="782.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1439.5109192297807" y="782.0505486765958"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="MailTocollabRefusedWithJustifs" id="BPMNEdge_MailTocollabRefusedWithJustifs">
+        <omgdi:waypoint x="1205.3882407983608" y="733.9217579679199"></omgdi:waypoint>
+        <omgdi:waypoint x="1205.0" y="620.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1270.1316091116105" y="620.4323723995678"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowWithoutjustif" id="BPMNEdge_flowWithoutjustif">
+        <omgdi:waypoint x="359.60734927722183" y="825.1230917375321"></omgdi:waypoint>
+        <omgdi:waypoint x="379.817691303032" y="846.9853763598389"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-B1C24F2F-435E-4D49-A3FD-39D73C4336F6" id="BPMNEdge_sid-B1C24F2F-435E-4D49-A3FD-39D73C4336F6">
+        <omgdi:waypoint x="577.8344261781457" y="68.22514656485507"></omgdi:waypoint>
+        <omgdi:waypoint x="649.178367671967" y="68.22514700753206"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flowcath" id="BPMNEdge_flowcath">
+        <omgdi:waypoint x="961.4298337277534" y="15.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1066.1052711387306" y="15.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1066.1052711387306" y="56.450294635546996"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

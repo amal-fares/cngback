@@ -43,7 +43,7 @@ public class Imageserv {
 @Autowired
     ChatRoomrepo chatRoomrepo;
 
-    public Image_justificatif AddandAssig(MultipartFile image,Long iddemande,Long chatroomid) throws IOException {
+    public Image_justificatif AddandAssig(MultipartFile image,long iddemande,long chatroomid) throws IOException {
 
         Demande_conge dem=demande_congebRepository.findById(iddemande).orElse(null);
         Map result = cloudinaryService.upload(image);
@@ -52,13 +52,29 @@ public class Imageserv {
                 result.get("original_filename")
                 , (String) result.get("url"),
                 (String) result.get("public_id"));
-        media.setDemande_cngjustif(dem);
+
+        media.setDemandecngjustif(dem);
         media.setChatroom(chatRoomrepo.findById(chatroomid).orElse(null));
         imagerepository.save(media);
 
-        return media ;
+        return media  ;
     }
+    public Image_justificatif AddandAssig(MultipartFile image,long iddemande) throws IOException {
 
+        Demande_conge dem=demande_congebRepository.findById(iddemande).orElse(null);
+        Map result = cloudinaryService.upload(image);
+        BufferedImage bi = ImageIO.read(image.getInputStream());
+        Image_justificatif media = new Image_justificatif((String)
+                result.get("original_filename")
+                , (String) result.get("url"),
+                (String) result.get("public_id"));
+
+        media.setDemandecngjustif(dem);
+
+        imagerepository.save(media);
+
+        return media  ;
+    }
 
 
 

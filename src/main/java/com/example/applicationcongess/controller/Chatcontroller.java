@@ -1,27 +1,24 @@
 package com.example.applicationcongess.controller;
 
-import com.example.applicationcongess.models.ChatMessage;
-import com.example.applicationcongess.models.Chatroom;
-import com.example.applicationcongess.models.Image_justificatif;
-import com.example.applicationcongess.models.Messages;
-import com.example.applicationcongess.repositories.ChatMessagerepo;
-import com.example.applicationcongess.repositories.ChatRoomrepo;
-import com.example.applicationcongess.repositories.MessagesRepository;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.example.applicationcongess.models.*;
+import com.example.applicationcongess.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.socket.WebSocketSession;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -30,44 +27,30 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Chatcontroller {
     @Autowired
     MessagesRepository messagesRepository;
+    @Autowired
+    Demande_congebRepository demande_congebRepository;
+    @Autowired
+    ChatRoomrepo chatRoomrepo;
+    @Autowired
+    Imagerepository imagerepository;
+    @Autowired
+    ChatRoomrepo cr;
+    @Autowired
+    ChatMessagerepo chatMessagerepo;
+    @Autowired
+    SimpMessagingTemplate messagingTemplate;
+    final  Cloudinary cloudinary;
 
-
-
-    @MessageMapping("/send")
-    @SendTo("/topic/public")
-    public String   sendMessage(@Payload String   chatMessage) {
-        System.out.println("mess");
-
-       String ch="jdjjdj";
-
-        System.out.println("mess");
-        return ch ;
-    }
+    private Map<String, String> valuesMap = new HashMap<>();
     @MessageExceptionHandler
     public void handleException(Throwable exception) {
         System.out.println(exception);
     }
 
-    @MessageMapping("/chat.reply")
-    @SendTo("/topic/public")
-    public String replyToMessage(String message) {
 
-
-        System.out.println("message");
-        return message;
-    }
-
-    @Autowired
-    ChatRoomrepo cr;
-@Autowired
-    ChatMessagerepo chatMessagerepo;
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-    // mapped to handle chat messages to the /sendmsg destination
     @MessageMapping("/sendmsg")
-    // the return value is broadcast to all subscribers of /chat/messages
     @SendTo("/topic/messages")
-    public ChatMessage chat( @RequestBody ChatMessage message) throws Exception {
+    public ChatMessage chat(@RequestBody ChatMessage message) throws Exception {
         Thread.sleep(1000); // simulated delay
         Chatroom ch = cr.findById(message.getIdchat()).orElse(null);
         message.setChat(ch);
@@ -76,23 +59,61 @@ public class Chatcontroller {
 
 
         return new ChatMessage(message.getMessageId(),message.getText(), message.getUsername(), message.getAvatar(),message.getSender(),message.getIdchat(),message.getChat());
-    }
-    // Map pour stocker les sessions WebSocket des utilisateurs connectés
-    private Map<String, WebSocketSession> userSessions = new ConcurrentHashMap<>();
 
-    // Méthode pour ajouter une session WebSocket associée à un utilisateur
-    public void addUserSession(String username, WebSocketSession session) {
-        userSessions.put(username, session);
-    }
 
-    // Méthode pour supprimer la session WebSocket associée à un utilisateur
-    public void removeUserSession(String username) {
-        userSessions.remove(username);
+        }
+
+    @MessageMapping("/notification")
+
+    public String notifierValidation(String message , String  iduser ) {
+        messagingTemplate.convertAndSendToUser(iduser, "/topic/notification", message);
+        return message
+                ;
     }
 
-    // Méthode pour récupérer la session WebSocket d'un utilisateur spécifié par son nom d'utilisateur
-    public WebSocketSession getUserSession(String username) {
-        return userSessions.get(username);
+    public Chatcontroller() {
+        valuesMap.put("cloud_name", "dcbg7hmvc");
+        valuesMap.put("api_key", "152545221988441");
+        valuesMap.put("api_secret", "5Q-oCmrUKORJIYJe87lbFt43rbo");
+        cloudinary = new Cloudinary(valuesMap);
+    }
+
+    @MessageMapping("/send-image")
+    @SendTo("/topic/messages" )
+    public Image_justificatif sendimage (@Payload MultipartFile multipartFile, @Header("idDemande") Long idDemande, @Header("chatroomId") Long chatroomId) throws IOException {
+
+        Demande_conge dem=demande_congebRepository.findById(idDemande).orElse(null);
+        File file = convert(multipartFile);
+        Map result = cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
+        file.delete();
+        BufferedImage bi = ImageIO.read(multipartFile.getInputStream());
+        Image_justificatif media = new Image_justificatif((String)
+                result.get("original_filename")
+                , (String) result.get("url"),
+                (String) result.get("public_id"));
+        media.setDemandecngjustif(dem);
+        media.setChatroom(chatRoomrepo.findById(chatroomId).orElse(null));
+        imagerepository.save(media);
+        return media ;
+    }
+    private File convert(MultipartFile multipartFile) throws IOException {
+        File file = new File(multipartFile.getOriginalFilename());
+        FileOutputStream fo = new FileOutputStream(file);
+        fo.write(multipartFile.getBytes());
+        fo.close();
+        return file;
+    }
+
+
+
+
+    @MessageMapping("/refus")
+
+    public String notifierrefus(String message , String  iduser ) {
+
+        messagingTemplate.convertAndSendToUser(iduser, "/topic/refus", message);
+        return message
+                ;
     }
 }
 

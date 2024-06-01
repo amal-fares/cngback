@@ -43,7 +43,7 @@ public class validatebouton implements JavaDelegate {
 
 
             System.out.println("validate bouton   ");
-            demande_conge.setStatut_conge(Statut_conge.valide1);
+            demande_conge.setStatutconge(Statut_conge.valide1);
             demande_congebRepository.save(demande_conge);
             runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "is_validated", true );
 

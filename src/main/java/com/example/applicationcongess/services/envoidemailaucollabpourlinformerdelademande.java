@@ -2,6 +2,7 @@ package com.example.applicationcongess.services;
 
 
 import com.example.applicationcongess.controller.Demande_congecontr;
+import com.example.applicationcongess.enums.ERole;
 import com.example.applicationcongess.models.Demande_conge;
 import com.example.applicationcongess.models.Personnel;
 import com.example.applicationcongess.repositories.Demande_congebRepository;
@@ -38,6 +39,7 @@ public class envoidemailaucollabpourlinformerdelademande implements TaskListener
 
             Long initiateurId = (long) runtimeService.getVariable(proessInstanceID, "initiator");
             Personnel personnelto = personnelRepository.findById(initiateurId).orElse(null);
+          if(personnelto.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_collaborateur))){
             String subject = "suivre la demande";
             String content = "Bonjour,\n\n" +
                     "votre demande est auprés de votre manager  elle va etre traité " + personnelto.getManager().getUsername() + ". Veuillez consulter le système pour plus de détails.\n\n" +
@@ -50,7 +52,10 @@ public class envoidemailaucollabpourlinformerdelademande implements TaskListener
             helper.setSubject(subject);
             helper.setText(content, true);
 
-            mailSender.send(message);
+            mailSender.send(message);}
+          if(personnelto.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_manager))){
+              System.out.println("initiateur de la demande est un maanger pas besoin de l informer de sa demande ");
+          }
         } catch ( Exception e ){
        System.out.println ( "mail ");}
     }

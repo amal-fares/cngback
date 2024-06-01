@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Import;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.builders.RequestParameterBuilder;
 import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
@@ -27,12 +28,20 @@ import java.util.*;
 public class SwaggerConfig {
     @Bean
     public Docket api() {
+        List<RequestParameter> requestParameters = new ArrayList<>();
+        requestParameters.add(new RequestParameterBuilder()
+                .name("file")
+                .description("Select file")
+                .required(true)
+                .in("formData")
+                .build());
         return new Docket(DocumentationType.SWAGGER_2)
                 .produces(new LinkedHashSet<>(Arrays.asList("application/json", "application/xml")))
                 .protocols(new HashSet<>(Arrays.asList("http","https")))
                 .securityContexts(Arrays.asList(securityContext()))
                 .securitySchemes(Arrays.asList(apiKey()))
                 .apiInfo(apiInfo())
+                .globalRequestParameters(requestParameters)
                 .select()
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any())

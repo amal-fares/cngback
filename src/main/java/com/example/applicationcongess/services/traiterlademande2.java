@@ -29,12 +29,12 @@ public class traiterlademande2 implements TaskListener {
         int nombreutilisateurchevauchant=demande_congebRepository.planningequipe(demande_conge.getDate_fin(),demande_conge.getDate_debut(),demande_conge.getCollaborateur().getCin());
         if (nombreutilisateurchevauchant>3){
             System.out.println("impossible de prendre le congé , les periodes de conges de collab se chevauchent2");
-            demande_conge.setStatut_conge(Statut_conge.rejette);
+            demande_conge.setStatutconge(Statut_conge.rejette);
             demande_congebRepository.save(demande_conge);
         }else
         {
             System.out.println("vous pouvez prendre des conges2");
-            demande_conge.setStatut_conge(Statut_conge.valide2);
+            demande_conge.setStatutconge(Statut_conge.valide2);
             demande_congebRepository.save(demande_conge);
         }
     }
