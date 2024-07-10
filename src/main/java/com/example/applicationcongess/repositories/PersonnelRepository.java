@@ -17,9 +17,10 @@ public interface PersonnelRepository extends JpaRepository<Personnel, Long> {
     Boolean existsByEmail(String email);
     Personnel findPersonnelByUsername(String username);
     Personnel findByCode(String code);
+    Personnel findPersonnelByCode(String code);
     Personnel findByManager(Long id );
             Personnel findPersonnelByEmail(String email );
-            Personnel findPersonnelByCode(String code );
+
             Personnel findByRoles(ERole erole);
             List<Personnel> findPersonnelByRoles(ERole erole);
 

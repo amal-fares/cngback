@@ -1,7 +1,10 @@
 package com.example.applicationcongess.services.serviceexceptionnel;
 
 
+import com.example.applicationcongess.controller.Demande_congecontr;
+import com.example.applicationcongess.models.Demande_conge;
 import com.example.applicationcongess.models.Personnel;
+import com.example.applicationcongess.repositories.Demande_congebRepository;
 import com.example.applicationcongess.repositories.PersonnelRepository;
 import com.example.applicationcongess.services.UserDetailsImpl;
 import com.example.applicationcongess.services.checkdonneesdeform;
@@ -33,6 +36,10 @@ public class mailtogest  implements JavaDelegate {
     public String resultat;
     @Autowired
     RuntimeService runtimeService;
+    @Autowired
+    Demande_congecontr demande_congecontr;
+    @Autowired
+    Demande_congebRepository demande_congebRepository;
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
 
@@ -41,8 +48,11 @@ public class mailtogest  implements JavaDelegate {
             ProcessInstance processInstanceencours = runtimeService.createProcessInstanceQuery()
                     .processDefinitionKey("my-process")
                     .singleResult();
+        runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "mail",true);
+        runtimeService.getVariable(demande_congecontr.getCurrentProcessInstanceId(), "id_demande_conge");
+       System.out.println("mailtogest")         ;
 
-            if (checkdonneesdeform.resultat.equals("Vous n'avez pas le droit de congés")) {
+    if (checkdonneesdeform.resultat.equals("Vous n'avez pas le droit de congés")) {
                 Task task = taskService.createTaskQuery().taskName("Remplir les champs de forumlaire de demande de conges").singleResult();
 
                 System.out.println("nVous n avez pas le droit de congés");
@@ -54,8 +64,11 @@ public class mailtogest  implements JavaDelegate {
                 UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
                 System.out.println(userDetails.getUsername());
                 Personnel personnel = personnelRepository.findById(userDetails.getCin()).orElse(null);
-
-
+        Personnel gestionnaire=personnelRepository.findById(personnel.getGestionnaire().getCin()).orElse(null);
+        gestionnaire.setEtatmail("mailgestmaanger");
+       personnel.setEtatmail("mailgestmaanger");
+        personnelRepository.save(personnel);
+personnelRepository.save(gestionnaire);
                 Personnel obejtmanager = personnelRepository.findById(personnel.getGestionnaire().getCin()).orElse(null);
                 String subject = "Demande de congés  Exceptionnel soumise par un collaborateur  " + personnel.getUsername();
                 String content = "Bonjour,\n\n" +

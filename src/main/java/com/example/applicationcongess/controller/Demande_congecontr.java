@@ -2,10 +2,7 @@ package com.example.applicationcongess.controller;
 
 import com.example.applicationcongess.PlayLoad.Response.GestionnaireDTO;
 import com.example.applicationcongess.PlayLoad.request.*;
-import com.example.applicationcongess.enums.ERole;
-import com.example.applicationcongess.enums.Statut_conge;
-import com.example.applicationcongess.enums.Type_conge;
-import com.example.applicationcongess.enums.Type_conge_exceptionnel;
+import com.example.applicationcongess.enums.*;
 import com.example.applicationcongess.models.*;
 //import com.example.applicationcongess.services.ActivitiConfig;
 import com.example.applicationcongess.repositories.*;
@@ -33,6 +30,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
@@ -55,11 +53,13 @@ import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
+import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -84,9 +84,7 @@ public class Demande_congecontr {
     PersonnelRepository personnelRepository;
     @Autowired
     deadlinedutraitement deadlinedutraitement;
-    private String valeur;
-    @Autowired
-    private ActivitiConfig activitiConfig;
+
     @Autowired
     RuntimeService runtimeService;
     @Autowired
@@ -160,7 +158,7 @@ public class Demande_congecontr {
             variablesvalidator.put("decision2", decision);
             Demande_conge demande_conge = demande_congebRepository.findById(iddeamnd).orElse(null);
             Personnel personnesoumisdemande = personnelRepository.findById(demande_conge.getCollaborateur().getCin()).orElse(null);
-            if(personnesoumisdemande.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_collaborateur))) {
+            if (personnesoumisdemande.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_collaborateur))) {
                 Personnel managerresponsable2 = personnelRepository.findById(personnesoumisdemande.getManagerdeuxiemeniveau().getCin()).orElse(null);
                 variablesvalidator.put("validatorname2", managerresponsable2.getUsername());
                 Long cin = managerresponsable2.getCin();
@@ -178,8 +176,8 @@ public class Demande_congecontr {
 
 
             }
-            if(personnesoumisdemande.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_manager))) {
-               System.out.println("j ai atteint la partie manager");
+            if (personnesoumisdemande.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_manager))) {
+                System.out.println("j ai atteint la partie manager");
                 Personnel managerresponsable2 = personnelRepository.findById(personnesoumisdemande.getManagerdeuxiemeniveau().getCin()).orElse(null);
                 variablesvalidator.put("validatorname2", managerresponsable2.getUsername());
                 Long cin = managerresponsable2.getCin();
@@ -197,31 +195,20 @@ public class Demande_congecontr {
 
 
             }
-           if (personnesoumisdemande.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_manager2))){
-               Long cinmanager = personnesoumisdemande.getCin();
-               variablesvalidator.put("initiateur2", cinmanager);
-               String signalName = "Notif Reguliermanager";
-               String activityId = "reguliermanagerdeux";
-               Execution waitingExecution = runtimeService.createExecutionQuery()
-                       .processInstanceId(currentProcessInstanceId)
-                       .activityId(activityId)
-                       .signalEventSubscriptionName(signalName)
-                       .singleResult();
-               System.out.println(waitingExecution);
-               runtimeService.setVariables(currentProcessInstanceId, variablesvalidator);
-               runtimeService.signalEventReceived("Notif Reguliermanager", waitingExecution.getId());
-           }
-
-
-
-
-
-
-
-
-
-
-
+            if (personnesoumisdemande.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_manager2))) {
+                Long cinmanager = personnesoumisdemande.getCin();
+                variablesvalidator.put("initiateur2", cinmanager);
+                String signalName = "Notif Reguliermanager";
+                String activityId = "reguliermanagerdeux";
+                Execution waitingExecution = runtimeService.createExecutionQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .activityId(activityId)
+                        .signalEventSubscriptionName(signalName)
+                        .singleResult();
+                System.out.println(waitingExecution);
+                runtimeService.setVariables(currentProcessInstanceId, variablesvalidator);
+                runtimeService.signalEventReceived("Notif Reguliermanager", waitingExecution.getId());
+            }
 
             Task usertask2 = taskService.createTaskQuery()
                     .processInstanceId(currentProcessInstanceId).taskName("mangerdeuxrefuseor accept decision")
@@ -258,14 +245,17 @@ public class Demande_congecontr {
             System.out.println(currentProcessInstanceId);
 
             variablesvalidator.put("decision", decision);
+
             Demande_conge demande_conge = demande_congebRepository.findById(iddeamnd).orElse(null);
+
             Personnel personnesoumisdenade = personnelRepository.findById(demande_conge.getCollaborateur().getCin()).orElse(null);
-           if( personnesoumisdenade.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_collaborateur))){
-            Personnel managerresponsable = personnelRepository.findById(personnesoumisdenade.getManager().getCin()).orElse(null);
-            variablesvalidator.put("validatorname", managerresponsable.getUsername());
-            Long cin = managerresponsable.getCin();
-            variablesvalidator.put("initiateur", cin);}
-            if(personnesoumisdenade.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_manager))){
+            if (personnesoumisdenade.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_collaborateur))) {
+                Personnel managerresponsable = personnelRepository.findById(personnesoumisdenade.getManager().getCin()).orElse(null);
+                variablesvalidator.put("validatorname", managerresponsable.getUsername());
+                Long cin = managerresponsable.getCin();
+                variablesvalidator.put("initiateur", cin);
+            }
+            if (personnesoumisdenade.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_manager))) {
                 Long cin = personnesoumisdenade.getCin();
                 variablesvalidator.put("validatorname", personnesoumisdenade.getUsername());
                 variablesvalidator.put("initiateur", cin);
@@ -274,7 +264,7 @@ public class Demande_congecontr {
             Date date = Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
 
-    demande_conge.setDatedecision(date);
+            demande_conge.setDatedecision(date);
 
 
             String signalName = "Notification Signal";
@@ -314,7 +304,11 @@ public class Demande_congecontr {
 
             Date start = demande_conge.getDate_debut();
             Boolean pausevariable = Boolean.FALSE;
+            Boolean deuxiemevalidation = Boolean.FALSE;
+            Boolean mail = Boolean.FALSE;
             variables.put("variablepause", pausevariable);
+            variables.put("mail", mail);
+            variables.put("deuxiemevalidation", deuxiemevalidation);
             Date end = demande_conge.getDate_fin();
             Type_conge type_conge = demande_conge.getTypeconge();
             Type_conge_exceptionnel type_conge_exceptionnel = demande_conge.getType_conge_exceptionnel();
@@ -343,7 +337,7 @@ public class Demande_congecontr {
                     System.out.println("Je suis gestionnaire");
                     variables.put("rolesoumetter", "Role_gestionnaire");
                 }
-                }
+            }
 
 
             System.out.println(variables);
@@ -367,11 +361,18 @@ public class Demande_congecontr {
                 demande_congebRepository.save(demandeconge);
                 variables.put("id_demande_conge", demandeconge.getId_demandeconge());
             }
-if (demandeconge.getTypeconge().equals(Type_conge.regulier)){
-    demandeconge.setStatutconge(Statut_conge.Enattente_de_validation);
-    demande_congebRepository.save(demandeconge);
-    variables.put("id_demande_conge", demandeconge.getId_demandeconge());
-}
+            if (demandeconge.getTypeconge().equals(Type_conge.regulier)) {
+                demandeconge.setStatutconge(Statut_conge.Enattente_de_validation);
+                demande_congebRepository.save(demandeconge);
+                variables.put("id_demande_conge", demandeconge.getId_demandeconge());
+            }
+            if(demandeconge.getTypeconge().equals(Type_conge.regulier)&&personnel.isConfirmsoldeprev()){
+                demandeconge.setTypecongeprev(Typecongeprev.previsionnel);
+                demande_congebRepository.save(demandeconge);
+            }else if(demandeconge.getTypeconge().equals(Type_conge.regulier)&& personnel.getSolde_conges() > 0 ){
+                demandeconge.setTypecongeprev(Typecongeprev.normal);
+                demande_congebRepository.save(demandeconge);
+            }
 
             variables.put("initiator", personnel.getCin());
             ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("my-process");
@@ -395,7 +396,6 @@ if (demandeconge.getTypeconge().equals(Type_conge.regulier)){
 
 
             }
-
 
         } catch (Exception e) {
             System.out.println("Erreur lors de l'analyse de la  : " + e.getMessage());
@@ -534,27 +534,29 @@ if (demandeconge.getTypeconge().equals(Type_conge.regulier)){
     Set<Long> demandesTraitees = new HashSet<>();
 
     @GetMapping("/soldeconges/{iduser}")
-
-    public float soldeConges(@PathVariable("iduser") Long iduser) {
+    public Map<String, Float> soldeConges(@PathVariable("iduser") Long iduser) {
         Personnel personnel = personnelRepository.findById(iduser).orElse(null);
 
         if (personnel == null) {
             // Gérer le cas où l'utilisateur est introuvable
-            return 0;
+            Map<String, Float> result = new HashMap<>();
+            result.put("soldePrevisionnel", 0f);
+            result.put("soldeConges", 0f);
+            return result;
         }
 
         float soldeConge = personnel.getSolde_conges();
+        float soldePrevisionnel = personnel.getSoldeprevisonnel();
         LocalDate now = LocalDate.now();
 
         // Si c'est le 1er janvier, réinitialiser le solde de congés à 22 jours
         if (now.getMonth() == Month.JANUARY && now.getDayOfMonth() == 1) {
             personnel.setSolde_conges(22);
-            personnelRepository.save(personnel);
+
         }
 
         // Récupérer toutes les demandes de congé validées pour cet utilisateur
-        List<Demande_conge> demandesConges = demande_congebRepository.findDemande_congeByCollaborateurAndStatutconge(personnel, Statut_conge.valide2);
-
+        List<Demande_conge> demandesConges = demande_congebRepository.findDemande_congeByCollaborateurAndStatutcongeAndTypeconge(personnel, Statut_conge.valide2,Type_conge.regulier);
 
         for (Demande_conge demande : demandesConges) {
             Long demandeId = demande.getId_demandeconge(); // Identifier unique de la demande
@@ -575,12 +577,24 @@ if (demandeconge.getTypeconge().equals(Type_conge.regulier)){
             // Calculer la durée en jours de la demande de congé
             long differenceInMillis = endDate.getTime() - startDate.getTime();
             long differenceInDays = differenceInMillis / (1000 * 60 * 60 * 24) + 1; // +1 pour inclure le dernier jour
+            if (demande.getTypeconge() == Type_conge.exceptionnel) {
+                continue;
+            }
 
-            // Soustraire la durée calculée du solde de congés actuel
-            soldeConge -= differenceInDays;
+            if ( soldeConge > 0 && demande.getTypeconge().equals(Type_conge.regulier)) {
+                soldeConge -= differenceInDays;
+            } else if ( demande.getTypeconge().equals(Type_conge.regulier)&&demande.getTypecongeprev().equals(Typecongeprev.previsionnel)) {
+                soldePrevisionnel -= differenceInDays;
+                if( soldePrevisionnel <0){
+                    soldePrevisionnel = 0;
+                }
+                personnel.setSoldeprevisonnel((long) soldePrevisionnel);
+
+
+            }
 
             // Si le solde de congés devient négatif, le mettre à zéro
-            if (soldeConge < 0) {
+            if (soldeConge < 0 || soldePrevisionnel <0 ) {
                 soldeConge = 0;
             }
 
@@ -592,8 +606,11 @@ if (demandeconge.getTypeconge().equals(Type_conge.regulier)){
         personnel.setSolde_conges(soldeConge);
         personnelRepository.save(personnel);
 
-        // Retourner le solde de congés mis à jour
-        return soldeConge;
+        // Retourner un Map avec les deux soldes
+        Map<String, Float> result = new HashMap<>();
+        result.put("soldePrevisionnel", soldePrevisionnel);
+        result.put("soldeConges", soldeConge);
+        return result;
     }
 
 
@@ -707,6 +724,12 @@ if (demandeconge.getTypeconge().equals(Type_conge.regulier)){
         return demande;
     }
 
+    @GetMapping("notif")
+    public String notif() {
+        String Chaine = "";
+        return Chaine;
+    }
+
     @GetMapping("/troisprochainsjours")
     public int getDemandesDansTroisProchainsJours() {
         int nombre = 0;
@@ -749,13 +772,20 @@ if (demandeconge.getTypeconge().equals(Type_conge.regulier)){
         List<Demande_conge> demande_conges = new ArrayList<>();
         for (Demande_conge demande_conge : demande_congebRepository.getDemande_congeByTypeconge(typeconge)) {
             System.out.println(demande_conge);
-            if (demande_conge.getStatutconge().equals(Statut_conge.Enattente_de_validation) || demande_conge.getStatutconge().equals(Statut_conge.enattentedejustificatifs))
+            if (demande_conge.getStatutconge().equals(Statut_conge.Enattente_de_validation)  ||
+                    demande_conge.getStatutconge().equals(Statut_conge.enattentedejustificatifs) ||
+                    (demande_conge.getStatutconge().equals(Statut_conge.valide2) && demande_conge.getJustificatifPresent() ) ||
+                    (demande_conge.getStatutconge().equals(Statut_conge.rejette) )
+                    ) {
                 demande_conges.add(demande_conge);
-            System.out.println(demande_conge);
+                System.out.println(demande_conge);
+            }
+
+
         }
         return demande_conges;
-
     }
+
     @GetMapping("listdemanagerun/{typeconge}")
     public List<Demande_conge> listedemandemanagerun(@PathVariable("typeconge") Type_conge typeconge) {
         List<Demande_conge> demande_conges = new ArrayList<>();
@@ -766,21 +796,24 @@ if (demandeconge.getTypeconge().equals(Type_conge.regulier)){
                 System.out.println(demande_conge);
             }
 
-        }  return demande_conges;}
+        }
+        return demande_conges;
+    }
 
     @GetMapping("listevalideun/{typeconge}")
     public List<Demande_conge> listedemandevalide(@PathVariable("typeconge") Type_conge typeconge) {
         List<Demande_conge> demande_conges = new ArrayList<>();
         for (Demande_conge demande_conge : demande_congebRepository.getDemande_congeByTypeconge(typeconge)) {
             System.out.println(demande_conge);
-            if((demande_conge.getStatutconge().equals(Statut_conge.Enattente_de_validation)&&demande_conge.getCollaborateur().getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_manager2)))||demande_conge.getStatutconge().equals(Statut_conge.valide1))
-            {
+            if ((demande_conge.getStatutconge().equals(Statut_conge.Enattente_de_validation) && demande_conge.getCollaborateur().getRoles().stream().anyMatch(role -> role.getName().equals(ERole.Role_manager2))) || demande_conge.getStatutconge().equals(Statut_conge.valide1)) {
                 demande_conges.add(demande_conge);
-            System.out.println(demande_conge);
+                System.out.println(demande_conge);
+            }
+
+
         }
-
-
-    }  return demande_conges;}
+        return demande_conges;
+    }
 
     @PutMapping("/modifierjustifetat/{iddemande}")
     public Demande_conge modifieretatjustif(@PathVariable("iddemande") long iddemande) {
@@ -820,7 +853,8 @@ if (demandeconge.getTypeconge().equals(Type_conge.regulier)){
         // Filtrer les demandes de congé antérieures à aujourd'hui et avec un statut validé
         List<Demande_conge> demandesCongesAnterieurValidees = demandesConge.stream()
                 .filter(demande -> demande.getDate_fin().before(dateAujourdhui))
-                .filter(demande ->  demande.getStatutconge().equals(Statut_conge.valide2))
+                .filter(demande -> demande.getStatutconge().equals(Statut_conge.valide2))
+                .filter(demande -> demande.getTypeconge().equals(Type_conge.regulier))
                 .collect(Collectors.toList());
 
         for (Demande_conge demande_conge : demandesCongesAnterieurValidees) {
@@ -937,31 +971,28 @@ if (demandeconge.getTypeconge().equals(Type_conge.regulier)){
     Imagerepository imagerepository;
     ////traiter justif
 
-///convertfiletomultipart
-public static MultipartFile convertFileToMultipartFile(File file) throws IOException {
-    FileItem fileItem = new DiskFileItem("file",
-            "image/jpeg", true, file.getName(), (int) file.length(), file.getParentFile());
+    ///convertfiletomultipart
+    public static MultipartFile convertFileToMultipartFile(File file) throws IOException {
+        FileItem fileItem = new DiskFileItem("file",
+                "image/jpeg", true, file.getName(), (int) file.length(), file.getParentFile());
 
-    try (InputStream input = new FileInputStream(file);
-         OutputStream os = fileItem.getOutputStream()) {
-        IOUtils.copy(input, os);
+        try (InputStream input = new FileInputStream(file);
+             OutputStream os = fileItem.getOutputStream()) {
+            IOUtils.copy(input, os);
+        }
+
+        return new CommonsMultipartFile(fileItem);
     }
 
-    return new CommonsMultipartFile(fileItem);
-}
 
-
-
-
-
-    @PostMapping("/traiterJustif/{idjustif}/{iddemande}")
-    public String traiterjustificatif(@PathVariable("idjustif") Long idimage_justif, @PathVariable("iddemande") long iddemande) throws IOException {
+    @PostMapping("/traiterJustif/{idjustif}")
+    public String traiterjustificatif(@PathVariable("idjustif") Long idimage_justif) throws IOException {
         String resultatTrait = "";
         try {
-            Demande_conge demande_conge = demande_congebRepository.findById(iddemande).orElse(null);
-            Image_justificatif image_justificatif = imagerepository.findById(idimage_justif).orElse(null);
 
-            if (demande_conge == null || image_justificatif == null) {
+            Image_justificatif image_justificatif = imagerepository.findById(idimage_justif).orElse(null);
+            Demande_conge demandeConge = demande_congebRepository.findById(image_justificatif.getDemandecngjustif().getId_demandeconge()).orElse(null);
+            if (demandeConge == null || image_justificatif == null) {
                 return "Demande or Image not found";
             }
 
@@ -1018,9 +1049,9 @@ public static MultipartFile convertFileToMultipartFile(File file) throws IOExcep
                     Files.write(dest.toPath(), imageBytes);
                 }
             };
-System.out.println("multipart");
+            System.out.println("multipart");
             // Your business logic
-            if (demande_conge.getTypecongeexceptionnel().equals(Type_conge_exceptionnel.Conge_Enfant_malade)) {
+            if (demandeConge.getTypecongeexceptionnel().equals(Type_conge_exceptionnel.Conge_Enfant_malade)) {
                 System.out.println("conge enfant malade");
                 System.out.println(scrapeDoctors());
                 System.out.println(extractTextFromJustificatif(multipartFile));
@@ -1028,8 +1059,10 @@ System.out.println("multipart");
                 if (scrapeDoctors().contains(extractTextFromJustificatif(multipartFile))) {
                     System.out.println("Justificatif_valid");
                     resultatTrait += "Justificatif traité et Validé avec succès ";
-                }else{
-                System.out.println("pasdentre");}
+                } else {
+                    System.out.println("pasdentre");
+                    resultatTrait += "Justificatif traité mais il n est pas validé  ";
+                }
             }
         } catch (IOException e) {
             // Handle the case when the image cannot be retrieved from the URL
@@ -1038,6 +1071,7 @@ System.out.println("multipart");
         }
         return resultatTrait;
     }
+
     private String getExtensionFromContentType(String contentType) {
         switch (contentType) {
             case "image/jpeg":
@@ -1053,73 +1087,101 @@ System.out.println("multipart");
 
 
     /////update image ////
-  @PutMapping("modifierimage/{idjustifancienne}")
-public Image_justificatif modfierimage( @PathVariable("idjustifancienne") long idjustifancienne,@RequestParam("file") MultipartFile multipartFile){
-      Map<String, Object> variables = new HashMap<>();
-      Image_justificatif image=null ;
-      Long iddemandeconge = ((Long) runtimeService.getVariable(currentProcessInstanceId, "id_demande_conge"));
-      Demande_conge demande_conge = demande_congebRepository.findById(iddemandeconge).orElse(null);
+    @PutMapping("modifierimage/{idjustifancienne}")
+    public Image_justificatif modfierimage(@PathVariable("idjustifancienne") long idjustifancienne, @RequestParam("file") MultipartFile multipartFile) {
+        Map<String, Object> variables = new HashMap<>();
+        Image_justificatif image = null;
+        Long iddemandeconge = ((Long) runtimeService.getVariable(currentProcessInstanceId, "id_demande_conge"));
+        Demande_conge demande_conge = demande_congebRepository.findById(iddemandeconge).orElse(null);
+        Boolean missingattachment = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "missingAttachment"));
+        Boolean decision = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "decision"));
+        runtimeService.setVariable(currentProcessInstanceId, "mail",false);
 
+        try {
+            Image_justificatif image_justificatif = imagerepository.findById(idjustifancienne).orElse(null);
+            String oldpublciimageid = image_justificatif.getImagenId();
 
+            if (demande_conge == null) {
+                throw new RuntimeException("La demande de congé avec l'ID " + iddemandeconge + " n'a pas été trouvée.");
+            }
 
-      try{
-      Image_justificatif image_justificatif=imagerepository.findById(idjustifancienne).orElse(null);
-      String   oldpublciimageid=image_justificatif.getImagenId();
+            Long idcollab = demande_conge.getCollaborateur().getCin();
+            variables.put("collabwithjustif", idcollab);
 
-          if (demande_conge == null) {
-              throw new RuntimeException("La demande de congé avec l'ID " + iddemandeconge + " n'a pas été trouvée.");
-          }
+            String newurl = cloudinaryService.replaceCloudinaryImage(oldpublciimageid, multipartFile);
+            image = imagerepository.findImage_justificatifByImagenId(oldpublciimageid);
+            image.setImagenUrl(newurl);
+            imagerepository.save(image);
+            variables.put("imagepublicnewcid", image.getImagenId());
+            System.out.println(image.getImagenUrl());
+            runtimeService.setVariables(currentProcessInstanceId, variables);
 
-          Long idcollab = demande_conge.getCollaborateur().getCin();
-          variables.put("collabwithjustif", idcollab);
+            if (!decision && missingattachment) {
+                String signalName = "Notif Withjustif";
+                String activityId = "catchwithjustif";
+                Execution waitingExecution = runtimeService.createExecutionQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .activityId(activityId)
+                        .signalEventSubscriptionName(signalName)
+                        .singleResult();
 
+                if (waitingExecution != null) {
+                    System.out.println("Signal event reçu avec succès pour l'activité 'exceptionnelcatch'.");
+                    runtimeService.signalEventReceived(signalName, waitingExecution.getId());
+                } else {
+                    throw new RuntimeException("Aucune exécution en attente trouvée pour l'événement de signal : " + signalName);
+                }
+                Task userTask = taskService.createTaskQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .taskName("AjoutAutreJustif")
+                        .singleResult();
 
-      String newurl=   cloudinaryService.replaceCloudinaryImage(oldpublciimageid,multipartFile);
-       image = imagerepository.findImage_justificatifByImagenId(oldpublciimageid);
-      image.setImagenUrl(newurl);
-          imagerepository.save(image);
-          variables.put("imagepublicnewcid", image.getImagenId());
-          System.out.println(image.getImagenUrl());
-          runtimeService.setVariables(currentProcessInstanceId, variables);
-          String signalName = "Notif Withjustif";
-          String activityId = "catchwithjustif";
-          Execution waitingExecution = runtimeService.createExecutionQuery()
-                  .processInstanceId(currentProcessInstanceId)
-                  .activityId(activityId)
-                  .signalEventSubscriptionName(signalName)
-                  .singleResult();
+                if (userTask != null) {
+                    System.out.println("Tâche 'AjoutAutreJustif' trouvée avec l'ID : " + userTask.getId());
+                    runtimeService.setVariable(currentProcessInstanceId, "missingAttachment", false);
+                    taskService.complete(userTask.getId());
+                    System.out.println("Tâche complétée avec succès.");
+                } else {
+                    throw new RuntimeException("La tâche 'AjoutAutreJustif' n'a pas été trouvée.");
+                }
+            } else if (decision && missingattachment) {
+                String signalName = "Notif Withoutjustif";
+                String activityId = "catchwithoutjustif";
+                Execution waitingExecution = runtimeService.createExecutionQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .activityId(activityId)
+                        .signalEventSubscriptionName(signalName)
+                        .singleResult();
 
-          if (waitingExecution != null) {
-              System.out.println("Signal event reçu avec succès pour l'activité 'exceptionnelcatch'.");
-              runtimeService.signalEventReceived(signalName, waitingExecution.getId());
-          } else {
-              throw new RuntimeException("Aucune exécution en attente trouvée pour l'événement de signal : " + signalName);
-          }
-      Task userTask = taskService.createTaskQuery()
-              .processInstanceId(currentProcessInstanceId)
-              .taskName("UpdateOuAjoutNewJustificatf")
-              .singleResult();
+                if (waitingExecution != null) {
+                    System.out.println("Signal event reçu avec succès pour l'activité 'exceptionnelcatch'.");
+                    runtimeService.signalEventReceived(signalName, waitingExecution.getId());
+                } else {
+                    throw new RuntimeException("Aucune exécution en attente trouvée pour l'événement de signal : " + signalName);
+                }
+                Task userTask = taskService.createTaskQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .taskName("Ajoutjustif")
+                        .singleResult();
 
-      if (userTask != null) {
-          System.out.println("Tâche 'UpdateOuAjoutNewJustificatf' trouvée avec l'ID : " + userTask.getId());
-          taskService.complete(userTask.getId());
-          System.out.println("Tâche complétée avec succès.");
-      } else {
-          throw new RuntimeException("La tâche 'UpdateOuAjoutNewJustificatf' n'a pas été trouvée.");
-      }}catch(Exception e ){
-          System.out.println("Erreur lors de l ajout  : " + e.getMessage());
-          e.printStackTrace();
-      }
-    return   imagerepository.save(image);
-
-  }
-
-
+                if (userTask != null) {
+                    System.out.println("Tâche 'Ajoutjustif' trouvée avec l'ID : " + userTask.getId());
+                    runtimeService.setVariable(currentProcessInstanceId, "missingAttachment", false);
+                    taskService.complete(userTask.getId());
+                    System.out.println("Tâche complétée avec succès.");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Erreur lors de l'ajout : " + e.getMessage());
+            e.printStackTrace();
+        }
+        return imagerepository.save(image);
+    }
 
 
     @PostMapping("validatebygest/{iduser}")
-    public List<Integer> refusereasonnbr( @PathVariable("iduser") long iduser) throws IOException {
-        List<Integer> nombrejourlist=new ArrayList<>();
+    public List<Integer> refusereasonnbr(@PathVariable("iduser") long iduser) throws IOException {
+        List<Integer> nombrejourlist = new ArrayList<>();
         Personnel personnelSoumisDemande = personnelRepository.findById(iduser).orElse(null);
         int nbJoursCongesExcepSur1Mois = 0;
         ;
@@ -1142,7 +1204,8 @@ public Image_justificatif modfierimage( @PathVariable("idjustifancienne") long i
             }
 
         }
-         nombrejourlist.add(nbJoursCongesExcepSur1Mois);
+        nombrejourlist.add(nbJoursCongesExcepSur1Mois);
+
         return nombrejourlist;
     }
 
@@ -1158,115 +1221,151 @@ public Image_justificatif modfierimage( @PathVariable("idjustifancienne") long i
             return tesseract.doOCR(imageFile);
         } catch (TesseractException e) {
             e.printStackTrace();
-            throw new RuntimeException("Erreur lors de l'extraction du texte OCR" );
+            throw new RuntimeException("Erreur lors de l'extraction du texte OCR");
 
         }
     }
 
 
     @PostMapping("/extract-text")
-    public String extractTextFromJustificatif(@RequestParam("image") MultipartFile image) {
+    public Map<String, String> extractTextFromJustificatif(@RequestParam("image") MultipartFile image) {
+        Map<String, String> resultMap = new HashMap<>();
+
         try {
             File tempFile = File.createTempFile("justificatif", ".jpg");
             image.transferTo(tempFile);
 
             String extractedText = extractTextFromImage(tempFile);
-            String[] lines = extractedText.split("\n");
-            String firstLine = lines[0];
 
-            String[] parts = firstLine.split(" ");
-            String firstName = "";
+            // Expression régulière pour extraire le nom "Jean-Paul"
+            Pattern patternNom = Pattern.compile("Je soussigné\\(e\\) (\\w+-\\w+)");
+            Matcher matcherNom = patternNom.matcher(extractedText);
+            String nom = matcherNom.find() ? matcherNom.group(1) : "";
 
-            for (int i = 0; i < parts.length; i++) {
-                if (parts[i].equals("Docteur")) {
-                    firstName = parts[i + 1];
-                    break;
-                }
-            }
+            // Expression régulière pour extraire le nom "Sarra Fares"
+            Pattern patternPrenom = Pattern.compile("Mr/Mme (\\w+ \\w+)");
+            Matcher matcherPrenom = patternPrenom.matcher(extractedText);
+            String prenom = matcherPrenom.find() ? matcherPrenom.group(1) : "";
 
-            return firstName.trim();
+            // Expression régulière pour extraire le nombre "3"
+            Pattern patternDuree = Pattern.compile("Duree : (\\d+) jours");
+            Matcher matcherDuree = patternDuree.matcher(extractedText);
+            String duree = matcherDuree.find() ? matcherDuree.group(1) : "";
+            resultMap.put("medecin", nom);
+            resultMap.put("patient", prenom);
+            resultMap.put("duree", duree);
 
+            System.out.println("Nom: " + nom);
+            System.out.println("Prénom: " + prenom);
+            System.out.println("Durée: " + duree);
+
+            return resultMap;
 
         } catch (IOException e) {
-            return "Erreur lors du traitement de l'image";
+            resultMap.put("Erreur", "Erreur lors du traitement de l'image");
+            return resultMap;
         }
     }
+
 
     @PostMapping("/validatedecison")
     public Demande_conge validatedecision() {
         Map<String, Object> variables = new HashMap<>();
         Long iddemandeconge = ((Long) runtimeService.getVariable(currentProcessInstanceId, "id_demande_conge"));
         Demande_conge demande_conge = demande_congebRepository.findById(iddemandeconge).orElse(null);
+        Boolean deuxiemevalidion = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "deuxiemevalidation"));
+        runtimeService.setVariable(currentProcessInstanceId, "mail",false);
+        runtimeService.getVariable(currentProcessInstanceId, "id_demande_conge");
 
         try {
-            if (demande_conge == null) {
-                throw new RuntimeException("La demande de congé avec l'ID " + iddemandeconge + " n'a pas été trouvée.");
-            }
+            if (!deuxiemevalidion) {
+                if (demande_conge == null) {
+                    throw new RuntimeException("La demande de congé avec l'ID " + iddemandeconge + " n'a pas été trouvée.");
+                }
 
-            Long idgestionnaire = demande_conge.getCollaborateur().getGestionnaire().getCin();
-            variables.put("gestionnaire", idgestionnaire);
+                Long idgestionnaire = demande_conge.getCollaborateur().getGestionnaire().getCin();
+                variables.put("gestionnaire", idgestionnaire);
 
-            if (demande_conge.getJustificatifPresent()) {
-                variables.put("missingAttachment", Boolean.FALSE);
-            } else {
-                variables.put("missingAttachment", Boolean.TRUE);
-            }
+                if (demande_conge.getJustificatifPresent()) {
+                    variables.put("missingAttachment", Boolean.FALSE);
+                } else {
+                    variables.put("missingAttachment", Boolean.TRUE);
+                }
 
-            demande_conge.setStatutconge(Statut_conge.valide2);
-            Boolean decision = Boolean.TRUE;
-            variables.put("decision", decision);
+                demande_conge.setStatutconge(Statut_conge.valide2);
+                boolean decision1 = true;
+                variables.put("decision", decision1);
 
-            Long idAyantSoumis = ((Long) runtimeService.getVariable(currentProcessInstanceId, "initiator"));
-            Personnel personnelSoumis = personnelRepository.findById(idAyantSoumis).orElse(null);
-            if (personnelSoumis == null) {
-                throw new RuntimeException("Le personnel ayant soumis la demande avec l'ID " + idAyantSoumis + " n'a pas été trouvé.");
-            }
-            Personnel Gestionnaire = personnelSoumis.getGestionnaire();
-            variables.put("validator_name", Gestionnaire.getUsername());
+                Long idAyantSoumis = ((Long) runtimeService.getVariable(currentProcessInstanceId, "initiator"));
+                Personnel personnelSoumis = personnelRepository.findById(idAyantSoumis).orElse(null);
+                personnelSoumis.setEtatmail("false");
+                personnelRepository.save(personnelSoumis);
+                System.out.println("etatmailvalidate");
+                System.out.println(personnelSoumis.getEtatmail());
+                if (personnelSoumis == null) {
+                    throw new RuntimeException("Le personnel ayant soumis la demande avec l'ID " + idAyantSoumis + " n'a pas été trouvé.");
+                }
+                Personnel Gestionnaire = personnelSoumis.getGestionnaire();
+                variables.put("validator_name", Gestionnaire.getUsername());
 
-            // Mettre à jour les variables du processus avec les nouvelles valeurs
-            runtimeService.setVariables(currentProcessInstanceId, variables);
-            System.out.println("Variables du processus mises à jour : " + variables);
+                // Mettre à jour les variables du processus avec les nouvelles valeurs
+                runtimeService.setVariables(currentProcessInstanceId, variables);
+                Boolean decision = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "decision"));
+                Boolean missingattacvement = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "missingAttachment"));
 
-            // Signal event
-            String signalName = "Notif Signall";
-            String activityId = "exceptionnelcatch";
-            Execution waitingExecution = runtimeService.createExecutionQuery()
-                    .processInstanceId(currentProcessInstanceId)
-                    .activityId(activityId)
-                    .signalEventSubscriptionName(signalName)
-                    .singleResult();
+                if(decision && !missingattacvement ||  !decision && !missingattacvement || decision &&missingattacvement){
+                    runtimeService.setVariable(currentProcessInstanceId, "mail",true);
 
-            if (waitingExecution != null) {
-                System.out.println("Signal event reçu avec succès pour l'activité 'exceptionnelcatch'.");
-                runtimeService.signalEventReceived(signalName, waitingExecution.getId());
-            } else {
-                throw new RuntimeException("Aucune exécution en attente trouvée pour l'événement de signal : " + signalName);
-            }
+                }else{
+                    runtimeService.setVariable(currentProcessInstanceId, "mail",false);
 
-            // Récupérer et compléter la tâche utilisateur
-            Task userTask = taskService.createTaskQuery()
-                    .processInstanceId(currentProcessInstanceId)
-                    .taskName("gest validateOrrefuse")
-                    .singleResult();
+                }
+                System.out.println("Variables du processus mises à jour : " + variables);
 
-            if (userTask != null) {
-                System.out.println("Tâche 'gest validateOrrefuse' trouvée avec l'ID : " + userTask.getId());
-                taskService.complete(userTask.getId());
-                System.out.println("Tâche complétée avec succès.");
-            } else {
-                throw new RuntimeException("La tâche 'gest validateOrrefuse' n'a pas été trouvée.");
-            }
+                // Signal event
+                String signalName = "Notif Signall";
+                String activityId = "exceptionnelcatch";
+                Execution waitingExecution = runtimeService.createExecutionQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .activityId(activityId)
+                        .signalEventSubscriptionName(signalName)
+                        .singleResult();
 
-            // Sauvegarder les changements dans la demande de congé
-            demande_congebRepository.save(demande_conge);
-            System.out.println("Demande de congé sauvegardée avec succès.");
+                if (waitingExecution != null) {
+                    System.out.println("Signal event reçu avec succès pour l'activité 'exceptionnelcatch'.");
+                    runtimeService.signalEventReceived(signalName, waitingExecution.getId());
+                } else {
+                    throw new RuntimeException("Aucune exécution en attente trouvée pour l'événement de signal : " + signalName);
+                }
+
+
+                // Récupérer et compléter la tâche utilisateur
+                Task userTask = taskService.createTaskQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .taskName("gest validateOrrefuse")
+                        .singleResult();
+
+                if (userTask != null) {
+                    System.out.println("Tâche 'gest validateOrrefuse' trouvée avec l'ID : " + userTask.getId());
+                    taskService.complete(userTask.getId());
+                    System.out.println("Tâche complétée avec succès.");
+                } else {
+                    throw new RuntimeException("La tâche 'gest validateOrrefuse' n'a pas été trouvée.");
+                }
+
+                // Sauvegarder les changements dans la demande de congé
+                demande_congebRepository.save(demande_conge);
+                System.out.println("Demande de congé sauvegardée avec succès.");
+            }  else {
+                    throw new RuntimeException("La tâche 'gest validateOrrefuse' n'a pas été trouvée.");
+                }
+
         } catch (Exception e) {
             System.out.println("Erreur lors de la validation de la décision : " + e.getMessage());
             e.printStackTrace();
         }
-
         return demande_conge;
+
     }
 
     @PostMapping("/refuserdemande")
@@ -1275,190 +1374,345 @@ public Image_justificatif modfierimage( @PathVariable("idjustifancienne") long i
         Map<String, Object> variables = new HashMap<>();
         Long iddemandeconge = ((Long) runtimeService.getVariable(currentProcessInstanceId, "id_demande_conge"));
         Demande_conge demande_conge = demande_congebRepository.findById(iddemandeconge).orElse(null);
+        Boolean deuxiemevalidion = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "deuxiemevalidation"));
+        System.out.println("deuxieme");
+        System.out.println(deuxiemevalidion);
+        runtimeService.setVariable(currentProcessInstanceId, "mail",false);
+        runtimeService.getVariable(currentProcessInstanceId, "id_demande_conge");
 
         try {
-            if (demande_conge == null) {
-                throw new RuntimeException("La demande de congé avec l'ID " + iddemandeconge + " n'a pas été trouvée.");
-            }
+            if (!deuxiemevalidion) {
 
-            Long idgestionnaire = demande_conge.getCollaborateur().getGestionnaire().getCin();
-            variables.put("gestionnaire", idgestionnaire);
+                Long idgestionnaire = demande_conge.getCollaborateur().getGestionnaire().getCin();
+                variables.put("gestionnaire", idgestionnaire);
 
-            if (demande_conge.getJustificatifPresent()) {
-                variables.put("missingAttachment", Boolean.FALSE);
+                if (demande_conge.getJustificatifPresent()) {
+                    variables.put("missingAttachment", Boolean.FALSE);
+                } else {
+                    variables.put("missingAttachment", Boolean.TRUE);
+                }
+
+                demande_conge.setStatutconge(Statut_conge.rejette);
+                boolean decision1 = false;
+                variables.put("decision", decision1);
+                if (demande_conge == null) {
+                    throw new RuntimeException("La demande de congé avec l'ID " + iddemandeconge + " n'a pas été trouvée.");
+                }
+
+                Long idAyantSoumis = ((Long) runtimeService.getVariable(currentProcessInstanceId, "initiator"));
+                Personnel personnelSoumis = personnelRepository.findById(idAyantSoumis).orElse(null);
+                personnelSoumis.setEtatmail("false");
+                personnelRepository.save(personnelSoumis);
+                System.out.println("etatmailvalidate");
+                System.out.println(personnelSoumis.getEtatmail());
+                if (personnelSoumis == null) {
+                    throw new RuntimeException("Le personnel ayant soumis la demande avec l'ID " + idAyantSoumis + " n'a pas été trouvé.");
+                }
+                Personnel Gestionnaire = personnelSoumis.getGestionnaire();
+                variables.put("validator_name", Gestionnaire.getUsername());
+                Boolean decision = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "decision"));
+                Boolean missingattacvement = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "missingAttachment"));
+
+                // Mettre à jour les variables du processus avec les nouvelles valeurs
+                runtimeService.setVariables(currentProcessInstanceId, variables);
+
+                System.out.println("Variables du processus mises à jour : " + variables);
+
+                // Signal event
+                String signalName = "Notif Signall";
+                String activityId = "exceptionnelcatch";
+                Execution waitingExecution = runtimeService.createExecutionQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .activityId(activityId)
+                        .signalEventSubscriptionName(signalName)
+                        .singleResult();
+
+                if (waitingExecution != null) {
+                    System.out.println("Signal event reçu avec succès pour l'activité 'exceptionnelcatch'.");
+                    runtimeService.signalEventReceived(signalName, waitingExecution.getId());
+                } else {
+                    throw new RuntimeException("Aucune exécution en attente trouvée pour l'événement de signal : " + signalName);
+                }
+
+                // Récupérer et compléter la tâche utilisateur
+                Task userTask = taskService.createTaskQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .taskName("gest validateOrrefuse")
+                        .singleResult();
+
+                if (userTask != null) {
+                    System.out.println("Tâche 'gest validateOrrefuse' trouvée avec l'ID : " + userTask.getId());
+                    taskService.complete(userTask.getId());
+
+System.out.println(decision);
+
+                    System.out.println("Tâche complétée avec succès.");
+                } else {
+                    throw new RuntimeException("La tâche 'gest validateOrrefuse' n'a pas été trouvée.");
+                }
+
+                // Sauvegarder les changements dans la demande de congé
+                demande_congebRepository.save(demande_conge);
+                System.out.println("Demande de congé sauvegardée avec succès.");
             } else {
-                variables.put("missingAttachment", Boolean.TRUE);
+                Boolean mssingattachement = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "missingAttachment"));
+                Boolean decision2 = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "decision"));
+                System.out.println(mssingattachement);
+                System.out.println(decision2);
+
+                Task userTask = taskService.createTaskQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .taskName("gest validateOrrefuse")
+                        .singleResult();
+
+                if (userTask != null) {
+                    System.out.println("Tâche 'gest validateOrrefuse' trouvée avec l'ID : " + userTask.getId());
+                    taskService.complete(userTask.getId());
+                    System.out.println("Tâche complétée avec succès.");
+                } else {
+                    throw new RuntimeException("La tâche 'gest validateOrrefuse' n'a pas été trouvée.");
+                }
             }
 
-            demande_conge.setStatutconge(Statut_conge.rejette);
-            Boolean decision = Boolean.FALSE;
-            variables.put("decision", decision);
 
-            Long idAyantSoumis = ((Long) runtimeService.getVariable(currentProcessInstanceId, "initiator"));
-            Personnel personnelSoumis = personnelRepository.findById(idAyantSoumis).orElse(null);
-            if (personnelSoumis == null) {
-                throw new RuntimeException("Le personnel ayant soumis la demande avec l'ID " + idAyantSoumis + " n'a pas été trouvé.");
-            }
-            Personnel Gestionnaire = personnelSoumis.getGestionnaire();
-            variables.put("validator_name", Gestionnaire.getUsername());
-
-            // Mettre à jour les variables du processus avec les nouvelles valeurs
-            runtimeService.setVariables(currentProcessInstanceId, variables);
-            System.out.println("Variables du processus mises à jour : " + variables);
-
-            // Signal event
-            String signalName = "Notif Signall";
-            String activityId = "exceptionnelcatch";
-            Execution waitingExecution = runtimeService.createExecutionQuery()
-                    .processInstanceId(currentProcessInstanceId)
-                    .activityId(activityId)
-                    .signalEventSubscriptionName(signalName)
-                    .singleResult();
-
-            if (waitingExecution != null) {
-                System.out.println("Signal event reçu avec succès pour l'activité 'exceptionnelcatch'.");
-                runtimeService.signalEventReceived(signalName, waitingExecution.getId());
-            } else {
-                throw new RuntimeException("Aucune exécution en attente trouvée pour l'événement de signal : " + signalName);
-            }
-
-            // Récupérer et compléter la tâche utilisateur
-            Task userTask = taskService.createTaskQuery()
-                    .processInstanceId(currentProcessInstanceId)
-                    .taskName("gest validateOrrefuse")
-                    .singleResult();
-
-            if (userTask != null) {
-                System.out.println("Tâche 'gest validateOrrefuse' trouvée avec l'ID : " + userTask.getId());
-                taskService.complete(userTask.getId());
-                System.out.println("Tâche complétée avec succès.");
-            } else {
-                throw new RuntimeException("La tâche 'gest validateOrrefuse' n'a pas été trouvée.");
-            }
-
-            // Sauvegarder les changements dans la demande de congé
-            demande_congebRepository.save(demande_conge);
-            System.out.println("Demande de congé sauvegardée avec succès.");
         } catch (Exception e) {
             System.out.println("Erreur lors de la validation de la décision : " + e.getMessage());
             e.printStackTrace();
         }
         return demande_conge;
     }
-  /*  @PutMapping("/ajoutjustficatif")
-    public Image_justificatif ajoutjustificatif(@RequestParam("image") MultipartFile image) {
+
+    /*  @PutMapping("/ajoutjustficatif")
+      public Image_justificatif ajoutjustificatif(@RequestParam("image") MultipartFile image) {
+          Map<String, Object> variables = new HashMap<>();
+          Long iddemandeconge = ((Long) runtimeService.getVariable(currentProcessInstanceId, "id_demande_conge"));
+          Demande_conge demande_conge = demande_congebRepository.findById(iddemandeconge).orElse(null);
+          try {
+              if (demande_conge == null) {
+                  throw new RuntimeException("La demande de congé avec l'ID " + iddemandeconge + " n'a pas été trouvée.");
+              AddandAssign(image,iddemandeconge);
+
+
+              }
+          } catch (Exception e) {
+              System.out.println("Erreur lors de la validation de la décision : " + e.getMessage());
+              e.printStackTrace();
+          }
+
+      }*/
+
+    @GetMapping("/getjustificatifpresent/{iddemande}")
+    public String verifierpresencejustif(@PathVariable("iddemande") long iddemande) {
+        Demande_conge demande_conge = demande_congebRepository.findById(iddemande).orElse(null);
+        String justificatifpresent = "";
+        if (demande_conge.getJustificatifPresent()) {
+            justificatifpresent = "Justificatif fourni";
+        } else {
+            justificatifpresent = "Justifcatif absent ";
+        }
+        return justificatifpresent;
+    }
+
+    //////getmetadata
+    @GetMapping("/getmetadata/{publicid}")
+    public Map getmetadata(@PathVariable("publicid") String publicid) {
+        return cloudinaryService.getImageMetadata(publicid);
+    }
+
+    /////Mon dossier numerique
+    @GetMapping("/getjustifbyidem/{iduser}")
+    public List<DemandeJustificatifDTO> getJustificatifsByDemande(@PathVariable("iduser") long iduseer) {
+        List<DemandeJustificatifDTO> result = new ArrayList<>();
+        Personnel personnelconnecte = personnelRepository.findById(iduseer).orElse(null);
+        // Récupérer toutes les demandes de congé
+        List<Demande_conge> demandes = demande_congebRepository.findDemande_congeByCollaborateur(personnelconnecte);
+
+        // Pour chaque demande de congé, récupérer son justificatif associé (hypothèse : un seul justificatif par demande)
+        for (Demande_conge demande : demandes) {
+            List<Image_justificatif> justificatif = imagerepository.findImage_justificatifByDemandecngjustif(demande);
+            List<String> imageUrls = new ArrayList<>();
+            List<Long> imageids = new ArrayList<>();
+            List<String> publicids = new ArrayList<>();
+            for (Image_justificatif justificatifs : justificatif) {
+                imageUrls.add(justificatifs.getImagenUrl());
+                imageids.add(justificatifs.getId());
+                publicids.add(justificatifs.getImagenId());
+            }
+            // Créer un DTO pour encapsuler l'ID de la demande et le justificatif
+            DemandeJustificatifDTO dto = new DemandeJustificatifDTO(demande.getId_demandeconge(), imageUrls, imageids, publicids, demande.getTypeconge(), demande.getTypecongeexceptionnel());
+
+            result.add(dto);
+        }
+
+        return result;
+    }
+
+    @GetMapping("findimagesbudemn/{iddemande}")
+    public List<Image_justificatif> getimagesbydem(@PathVariable("iddemande") long iddemande) {
+        Demande_conge demande_conge = demande_congebRepository.findById(iddemande).orElse(null);
+        return imagerepository.findImage_justificatifByDemandecngjustif(demande_conge);
+    }
+
+    @PostMapping("/ajoutjustifwithout")
+    public Image_justificatif ajouterwithoutjustif(@RequestParam("image") MultipartFile image) throws IOException {
         Map<String, Object> variables = new HashMap<>();
         Long iddemandeconge = ((Long) runtimeService.getVariable(currentProcessInstanceId, "id_demande_conge"));
-        Demande_conge demande_conge = demande_congebRepository.findById(iddemandeconge).orElse(null);
+        Image_justificatif imagess=new Image_justificatif();
+        runtimeService.setVariable(currentProcessInstanceId, "mail",false);
+        runtimeService.getVariable(currentProcessInstanceId, "id_demande_conge");
+        Demande_conge demandeconge =demande_congebRepository.findById(iddemandeconge).orElse(null);
+        Personnel personnesoumisdenade = personnelRepository.findById(demandeconge.getCollaborateur().getCin()).orElse(null);
+
+        personnesoumisdenade.setEtatmail("false");
+        personnelRepository.save(personnesoumisdenade);
+        System.out.println("etatmailwithout");
+        System.out.println(personnesoumisdenade.getEtatmail());
         try {
-            if (demande_conge == null) {
-                throw new RuntimeException("La demande de congé avec l'ID " + iddemandeconge + " n'a pas été trouvée.");
-            AddandAssign(image,iddemandeconge);
+            System.out.println("get");
+            Boolean missingatathemnt = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "missingAttachment"));
+            System.out.println(missingatathemnt);
 
+            Boolean decision = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "decision"));
+            System.out.println(decision);
+            if (missingatathemnt && decision) {
+                System.out.println(" missingatch ==Trueand Decision == true");
+                 imagess = imageserv.AddandAssig(image, iddemandeconge);
+                variables.put("imagepublicnewcid", imagess.getImagenId());
+                System.out.println(imagess.getImagenUrl());
+                runtimeService.setVariable(currentProcessInstanceId, "missingAttachment", false);
+                Demande_conge demande_conge = demande_congebRepository.findById(iddemandeconge).orElse(null);
+                demande_conge.setJustificatifPresent(true);
+                demande_congebRepository.save(demande_conge);
+                runtimeService.setVariables(currentProcessInstanceId, variables);
+                String signalName = "Notif Withoutjustif";
+                String activityId = "catchwithoutjustif";
+                Execution waitingExecution = runtimeService.createExecutionQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .activityId(activityId)
+                        .signalEventSubscriptionName(signalName)
+                        .singleResult();
 
+                if (waitingExecution != null) {
+                    System.out.println("Signal event reçu avec succès pour l'activité 'watchwithoutjutif'.");
+                    runtimeService.signalEventReceived(signalName, waitingExecution.getId());
+                } else {
+                    throw new RuntimeException("Aucune exécution en attente trouvée pour l'événement de signal : " + signalName);
+                }
+
+                // Récupérer et compléter la tâche utilisateur
+                Task userTask = taskService.createTaskQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .taskName("Ajoutjustif")
+                        .singleResult();
+
+                if (userTask != null) {
+                    System.out.println("Tâche 'Ajoutjustif' trouvée avec l'ID : " + userTask.getId());
+                    taskService.complete(userTask.getId());
+                    System.out.println("Tâche complétée avec succès.");
+                } else {
+                    throw new RuntimeException("La tâche 'Ajoutjustif' n'a pas été trouvée.");
+                }
+            }
+            if (missingatathemnt == true && !decision) {
+                System.out.println(" missingatch ==Trueand Decision == false");
+                 imagess = imageserv.AddandAssig(image, iddemandeconge);
+                variables.put("imagepublicnewcid", imagess.getImagenId());
+                System.out.println(imagess.getImagenUrl());
+                runtimeService.setVariable(currentProcessInstanceId, "missingAttachment", false);
+                Demande_conge demande_congee = demande_congebRepository.findById(iddemandeconge).orElse(null);
+                System.out.println("justifpresentsettrue");
+                demande_congee.setJustificatifPresent(true);
+                demande_congebRepository.save(demande_congee);
+                runtimeService.setVariables(currentProcessInstanceId, variables);
+                String signalNamee = "Notif Withjustif";
+                String activityIdd = "catchwithjustif";
+                Execution waitingExecutionn = runtimeService.createExecutionQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .activityId(activityIdd)
+                        .signalEventSubscriptionName(signalNamee)
+                        .singleResult();
+
+                if (waitingExecutionn != null) {
+                    System.out.println("Signal event reçu avec succès pour l'activité 'watchwithjustif'.");
+                    runtimeService.signalEventReceived(signalNamee, waitingExecutionn.getId());
+                } else {
+                    throw new RuntimeException("Aucune exécution en attente trouvée pour l'événement de signal : " + signalNamee);
+                }
+
+                // Récupérer et compléter la tâche utilisateur
+                Task userTaskk = taskService.createTaskQuery()
+                        .processInstanceId(currentProcessInstanceId)
+                        .taskName("AjoutAutreJustif")
+                        .singleResult();
+
+                if (userTaskk != null) {
+                    System.out.println("Tâche 'AjoutAutreJustif' trouvée avec l'ID : " + userTaskk.getId());
+                    taskService.complete(userTaskk.getId());
+                    System.out.println("Tâche complétée avec succès.");
+                } else {
+                    throw new RuntimeException("La tâche 'AjoutAutreJustif' n'a pas été trouvée.");
+                }
             }
         } catch (Exception e) {
-            System.out.println("Erreur lors de la validation de la décision : " + e.getMessage());
             e.printStackTrace();
         }
 
-    }*/
-@GetMapping("/getjustificatifpresent/{iddemande}")
-    public  String verifierpresencejustif(@PathVariable("iddemande") long iddemande){
-    Demande_conge demande_conge=demande_congebRepository.findById(iddemande).orElse(null);
- String justificatifpresent="";
-    if(demande_conge.getJustificatifPresent()){
-        justificatifpresent="Justificatif fourni";
-    }else {
-        justificatifpresent="Justifcatif absent ";
+        return imagess;
     }
-    return justificatifpresent;
-}
-//////getmetadata
-    @GetMapping("/getmetadata/{publicid}")
-    public Map getmetadata(@PathVariable("publicid") String publicid){
-    return cloudinaryService.getImageMetadata(publicid);
-    }
-/////Mon dossier numerique
-@GetMapping("/getjustifbyidem/{iduser}")
-public List<DemandeJustificatifDTO> getJustificatifsByDemande(@PathVariable("iduser") long iduseer) {
-    List<DemandeJustificatifDTO> result = new ArrayList<>();
-Personnel personnelconnecte=personnelRepository.findById(iduseer).orElse(null);
-    // Récupérer toutes les demandes de congé
-    List<Demande_conge> demandes = demande_congebRepository.findDemande_congeByCollaborateur(personnelconnecte);
+@PostMapping("/rappeler")
+public void rappeleraccepter(){
+    long  iduser = (long ) runtimeService.getVariable(currentProcessInstanceId, "initiator");
 
-    // Pour chaque demande de congé, récupérer son justificatif associé (hypothèse : un seul justificatif par demande)
-    for (Demande_conge demande : demandes) {
-        List<Image_justificatif> justificatif = imagerepository.findImage_justificatifByDemandecngjustif(demande);
-        List<String> imageUrls = new ArrayList<>();
-        List<Long> imageids = new ArrayList<>();
-        List<String> publicids = new ArrayList<>();
-        for (Image_justificatif justificatifs : justificatif) {
-            imageUrls.add(justificatifs.getImagenUrl());
-            imageids.add(justificatifs.getId());
-            publicids.add(justificatifs.getImagenId());
-        }
-        // Créer un DTO pour encapsuler l'ID de la demande et le justificatif
-        DemandeJustificatifDTO dto = new DemandeJustificatifDTO(demande.getId_demandeconge(), imageUrls,imageids,publicids,demande.getTypeconge(),demande.getTypecongeexceptionnel());
-
-        result.add(dto);
-    }
-
-    return result;
-}
-@GetMapping("findimagesbudemn/{iddemande}")
-    public   List<Image_justificatif> getimagesbydem(@PathVariable("iddemande") long iddemande){
-    Demande_conge demande_conge=demande_congebRepository.findById(iddemande).orElse(null);
-    return imagerepository.findImage_justificatifByDemandecngjustif(demande_conge);
-}
-
-@PostMapping("/ajoutjustifwithout")
-    public Image_justificatif ajouterwithoutjustif(@RequestParam("image") MultipartFile image) throws IOException {
-    Long iddemandeconge = ((Long) runtimeService.getVariable(currentProcessInstanceId, "id_demande_conge"));
-    String signalName = "Notif Withoutjustif";
-    String activityId = "catchwithoutjustif";
-    Execution waitingExecution = runtimeService.createExecutionQuery()
+    String str = Long.toString(iduser);
+        chatcontroller.ajoutjustif("Veuiller verifier votre espace",str);
+    Task userTaskk = taskService.createTaskQuery()
             .processInstanceId(currentProcessInstanceId)
-            .activityId(activityId)
-            .signalEventSubscriptionName(signalName)
+            .taskName("rappel")
             .singleResult();
+  runtimeService.setVariable(currentProcessInstanceId, "hasReminded",true);
 
-    if (waitingExecution != null) {
-        System.out.println("Signal event reçu avec succès pour l'activité 'exceptionnelcatch'.");
-        runtimeService.signalEventReceived(signalName, waitingExecution.getId());
+    if (userTaskk != null) {
+        System.out.println("Tâche 'rappel' trouvée avec l'ID : " + userTaskk.getId());
+        taskService.complete(userTaskk.getId());
+        System.out.println("Tâche rappel avec succès.");
     } else {
-        throw new RuntimeException("Aucune exécution en attente trouvée pour l'événement de signal : " + signalName);
+        throw new RuntimeException("La tâche 'AjoutAutreJustif' n'a pas été trouvée.");
     }
 
-    // Récupérer et compléter la tâche utilisateur
-    Task userTask = taskService.createTaskQuery()
-            .processInstanceId(currentProcessInstanceId)
-            .taskName("CollabUpdateAttachement")
-            .singleResult();
+}
+    @PostMapping("/nepasrappeler")
+    public void nepasrappeler(){
+        long  iduser = (long ) runtimeService.getVariable(currentProcessInstanceId, "initiator");
 
-    if (userTask != null) {
-        System.out.println("Tâche 'gest validateOrrefuse' trouvée avec l'ID : " + userTask.getId());
-        taskService.complete(userTask.getId());
-        System.out.println("Tâche complétée avec succès.");
-    } else {
-        throw new RuntimeException("La tâche 'gest validateOrrefuse' n'a pas été trouvée.");
+        String str = Long.toString(iduser);
+        chatcontroller.ajoutjustif("Veuiller verifier votre espace",str);
+        Task userTaskk = taskService.createTaskQuery()
+                .processInstanceId(currentProcessInstanceId)
+                .taskName("rappel")
+                .singleResult();
+        runtimeService.setVariable(currentProcessInstanceId, "hasReminded",false);
+
+        if (userTaskk != null) {
+            System.out.println("Tâche 'rappel' trouvée avec l'ID : " + userTaskk.getId());
+            taskService.complete(userTaskk.getId());
+            System.out.println("Tâche rappel avec succès.");
+        } else {
+            throw new RuntimeException("La tâche 'AjoutAutreJustif' n'a pas été trouvée.");
+        }}
+    @GetMapping("/getaaluser")
+    public List<Personnel> getallusers() {
+        return personnelRepository.findAll();
     }
 
-return   imageserv.AddandAssig(image, iddemandeconge);
-}
-@GetMapping("/getaaluser")
-    public List<Personnel> getallusers(){
-    return personnelRepository.findAll();
-}
-@GetMapping("/demandestraitesemcour")
-    public int demandetraitessemcourante(){
+    @GetMapping("/demandestraitesemcour")
+    public int demandetraitessemcourante() {
         LocalDate now = LocalDate.now();
         LocalDate debutSemaine = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate finSemaine = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
-       Date datedeb= Date.from(debutSemaine.atStartOfDay(ZoneId.systemDefault()).toInstant());
-      Date datefin=  Date.from(finSemaine.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date datedeb = Date.from(debutSemaine.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date datefin = Date.from(finSemaine.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-   return demande_congebRepository.demandesemainecourantes(datedeb,datefin);
+        return demande_congebRepository.demandesemainecourantes(datedeb, datefin);
     }
 
 
@@ -1535,6 +1789,7 @@ return   imageserv.AddandAssig(image, iddemandeconge);
 
         return allDays;
     }
+
     @GetMapping("countbytype")
     public Map<Type_conge_exceptionnel, Integer> countDemandesParType() {
         LocalDate now = LocalDate.now();
@@ -1552,6 +1807,7 @@ return   imageserv.AddandAssig(image, iddemandeconge);
         }
         return countByType;
     }
+
     @GetMapping("countbytypeconge")
     public Map<Type_conge, Integer> countbytypeonge() {
         LocalDate now = LocalDate.now();
@@ -1569,19 +1825,22 @@ return   imageserv.AddandAssig(image, iddemandeconge);
         }
         return countByType;
     }
+
+    Set<Long> demandesTrait = new HashSet<>();
+
     @GetMapping("/soumissionparvac")
-    public Map<String, Integer> compareVacationsAndConges( ) throws IOException {
+    public Map<String, Integer> compareVacationsAndConges() throws IOException {
         Map<String, Integer> soumissionsParVacances = new HashMap<>();
-List<Demande_conge>demandeconges =demande_congebRepository.findAll();
+        List<Demande_conge> demandeconges = demande_congebRepository.findAll();
 
         List<JsonNode> vacances = getVacancesScolaires();
 
         // Parcourir chaque demande de congé
         for (Demande_conge demande_conge : demandeconges) {
-
+            System.out.println("dem");
             java.sql.Date datedebutsql = (java.sql.Date) demande_conge.getDate_debut();
             LocalDate datdebulocal = datedebutsql.toLocalDate();
-             OffsetDateTime debutCongedem = datdebulocal.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime();
+            OffsetDateTime debutCongedem = datdebulocal.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime();
 
             java.sql.Date dateFinSql = (java.sql.Date) demande_conge.getDate_fin();
             LocalDate dateFinLocal = dateFinSql.toLocalDate();
@@ -1599,18 +1858,318 @@ List<Demande_conge>demandeconges =demande_congebRepository.findAll();
                         (finCongedem.isBefore(finVacance) && finCongedem.isAfter(debutVacance)) ||
                         (debutCongedem.isBefore(debutVacance) && finCongedem.isAfter(finVacance) ||
                                 (debutCongedem.isEqual(debutVacance) && finCongedem.isEqual(finVacance)))) {
-                    // Incrémenter le compteur pour ce type de vacances
-                    soumissionsParVacances.put(descriptionVacance, soumissionsParVacances.getOrDefault(descriptionVacance, 0) +1);
+                    if (demandesTrait.contains(demande_conge.getId_demandeconge())) {
+                        continue; // Passer à la demande suivante si elle a déjà été traitée
+                    }
+                    soumissionsParVacances.put(descriptionVacance, soumissionsParVacances.getOrDefault(descriptionVacance, 0) + 1);
+                    demandesTrait.add(demande_conge.getId_demandeconge());
+                    System.out.println(demandesTrait);
                 }
             }
         }
 
         return soumissionsParVacances;
     }
+   @PostMapping("/getmapjson")
+    public  Map<String, Integer> verifierduresyntec(){
+
+       Map<String, Integer> typesCongesLegaux = new LinkedHashMap<>();
+        // Accéder aux valeurs du Map pour les comparer ou les utiliser
+
+        Iterator<JsonNode> it = gettypesconges().iterator();
+        while (it.hasNext()) {
+            JsonNode typeconge = it.next();
+            System.out.println(typeconge);
+            String typeconges = typeconge.get("type").asText();
+            int dureejrs = typeconge.get("duree_en_jours").asInt();
+            System.out.println(typeconges);
+            System.out.println(dureejrs);
+            typesCongesLegaux.put(typeconges, dureejrs);
+    }
+       return typesCongesLegaux;
+    }
+
+    @PostMapping("/maanagenexatatchement/{idjustif}")
+    public List<String> managenewattachement(@PathVariable("idjustif") long idimage_justif) {
+        String resultatTrait = "";
+        List<String > resultat = new ArrayList<>();
+        Boolean missingatathemnt = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "missingAttachment"));
+        Boolean decision = ((Boolean) runtimeService.getVariable(currentProcessInstanceId, "decision"));
+System.out.println(missingatathemnt);
+System.out.println(decision);
+try {
+            Image_justificatif image_justificatif = imagerepository.findById(idimage_justif).orElse(null);
+
+            Demande_conge demandeConge = demande_congebRepository.findById(image_justificatif.getDemandecngjustif().getId_demandeconge()).orElse(null);
+            if (demandeConge == null || image_justificatif == null) {
+                resultatTrait+= "Demande or Image not found";
+                resultat.add(resultatTrait);
+            }
+
+            // Download image from URL
+            URL url = new URL(image_justificatif.getImagenUrl());
+            InputStream inputStream = url.openStream();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            byte[] imageBytes = outputStream.toByteArray();
+
+            // Create MultipartFile
+            MultipartFile multipartFile = new MultipartFile() {
+                @Override
+                public String getName() {
+                    return "file";
+                }
+
+                @Override
+                public String getOriginalFilename() {
+                    return image_justificatif.getName();
+                }
+
+                @Override
+                public String getContentType() {
+                    return "image/jpeg"; // Adjust the content type if necessary
+                }
+
+                @Override
+                public boolean isEmpty() {
+                    return imageBytes.length == 0;
+                }
+
+                @Override
+                public long getSize() {
+                    return imageBytes.length;
+                }
+
+                @Override
+                public byte[] getBytes() throws IOException {
+                    return imageBytes;
+                }
+
+                @Override
+                public InputStream getInputStream() throws IOException {
+                    return inputStream;
+                }
+
+                @Override
+                public void transferTo(java.io.File dest) throws IOException, IllegalStateException {
+                    Files.write(dest.toPath(), imageBytes);
+                }
+            };
+System.out.println(scrapeDoctors());
+System.out.println(extractTextFromJustificatif(multipartFile));
+
+            resultatTrait+=  verifierDemandeConge(multipartFile, demandeConge.getId_demandeconge());
+resultat.add(resultatTrait);
+    Map<String, String> resultMap = extractTextFromJustificatif(multipartFile);
+    String nomedecin = resultMap.get("medecin");
+    System.out.println(scrapeDoctors().contains(nomedecin));
+    System.out.println(resultatTrait.equals("duree legale bien appliquée"));
+
+            if (demandeConge.getTypecongeexceptionnel().equals(Type_conge_exceptionnel.Conge_Enfant_malade)) {
+                if (scrapeDoctors().contains(nomedecin)&& resultatTrait.equals("duree legale bien appliquée")) {
+                   System.out.println("scrape");
+                    resultatTrait = "Justificatif de l enfant malade traité et Validé avec succès";
+                    resultat.add(resultatTrait);
+                    runtimeService.setVariable(currentProcessInstanceId, "passthrough", true);
+                    System.out.println("passthrough");
+                    System.out.println(runtimeService.getVariable(currentProcessInstanceId, "passthrough"));
+                    runtimeService.setVariable(currentProcessInstanceId, "missingAttachment", false);
+                    runtimeService.setVariable(currentProcessInstanceId, "decision", true);
+
+                } else {
+                    resultatTrait =  "Justificatif  de l enfant malade traité et  n est pas Validé avec succès";
+                    runtimeService.setVariable(currentProcessInstanceId, "missingAttachment", true);
+resultat.add(resultatTrait);
+                    runtimeService.setVariable(currentProcessInstanceId, "passthrough", false);
+
+                }
+                if(decision&&!missingatathemnt){
+                    Task userTask = taskService.createTaskQuery()
+                            .processInstanceId(currentProcessInstanceId)
+                            .taskName("GestionnaireManageNewAttachemnt")
+                            .singleResult();
+
+                    if (userTask != null) {
+                        taskService.complete(userTask.getId());
+                        System.out.println("Tâche complétée avec succès.");
+                    } else {
+                        throw new RuntimeException("La tâche 'collabupdateattahement' n'a pas été trouvée.");
+                    }}
+                if(!decision && !missingatathemnt){
+                    Task userTask = taskService.createTaskQuery()
+                            .processInstanceId(currentProcessInstanceId)
+                            .taskName("maangeattah")
+                            .singleResult();
+
+                    if (userTask != null) {
+                        taskService.complete(userTask.getId());
+                        System.out.println("Tâche complétée avec succès.");
+                    } else {
+                        throw new RuntimeException("La tâche 'manageattach' n'a pas été trouvée.");
+                    }}
 
 
+
+
+            }
+
+} catch (MalformedURLException ex) {
+    throw new RuntimeException(ex);
+} catch (IOException ex) {
+    throw new RuntimeException(ex);
 }
 
+
+        return resultat;
+    }
+    @PostMapping ("/taille")
+    public String DemandeCongetaille ( @RequestParam("file") MultipartFile multipartFile) {
+        long  fileSize = multipartFile.getSize();
+
+        String resultat = "";
+
+        // Vérifier la taille de l'image
+
+        long  maxImageSize = 6000000;
+        if (  fileSize>maxImageSize) {
+            resultat  += "La taille du justificatif doit  satisfaire les normes .Veuillez joindre un autre justificatif qui satisfait les normes";
+             }
+
+        else if ( maxImageSize> fileSize) {
+            resultat+= "les normes sont satisfaits . Justificatif ajouté avec succés";
+
+        }
+        return resultat;
+    }
+    @DeleteMapping("/delete/{iddemande}")
+    public void delete(@PathVariable("iddemande") long iddemande) {
+        demande_congebRepository.deleteById(iddemande);
+    }
+
+    @PutMapping("/update/{iddemande}")
+
+    public Demande_conge updatedem(@PathVariable("iddemande") long iddemande) {
+        Demande_conge demande_conge = demande_congebRepository.findById(iddemande).orElse(null);
+        return demande_congebRepository.save(demande_conge);
+    }
+
+    @GetMapping("/get/{iddemande}")
+
+    public Demande_conge getde(@PathVariable("iddemande") long iddemande) {
+        return demande_congebRepository.findById(iddemande).orElse(null);
+    }
+
+    @GetMapping("/recherche/{carac}")
+    public List<Demande_conge> getdemande(@PathVariable("carac") String character) {
+        return demande_congebRepository.rechercheDynamique(character);
+    }
+    @PostMapping("/confirmsoldeprev/{idpersonnel}")
+    public Personnel confirmsoldeprev(@PathVariable("idpersonnel") long idpersonnel){
+       Personnel personnel =personnelRepository.findById(idpersonnel).orElse(null);
+       personnel.setConfirmsoldeprev(true);
+
+
+
+        return personnelRepository.save(personnel);
+    }
+    @PostMapping("/nepasconfirmsoldeprev/{idpersonnel}")
+    public Personnel nepasconfirmersoldeprev(@PathVariable("idpersonnel") long idpersonnel){
+        Personnel personnel =personnelRepository.findById(idpersonnel).orElse(null);
+        personnel.setConfirmsoldeprev(false);
+        return personnelRepository.save(personnel);
+    }
+    @GetMapping("/getdureedeconges")
+    public List<JsonNode> gettypesconges() {
+        try {
+            ClassPathResource resource = new ClassPathResource("fichier.json");
+            File jsonFile = resource.getFile();
+            byte[] jsonData = Files.readAllBytes(jsonFile.toPath());
+            JsonNode types = objectMapper.readTree(jsonData);
+            Iterator<JsonNode> iterator = types.elements();
+            List<JsonNode> dureeenjours = new ArrayList<>();
+            while (iterator.hasNext()) {
+                dureeenjours.add(iterator.next());
+            }
+            return dureeenjours;
+        } catch (IOException e) {
+            throw new RuntimeException("Erreur lors de la lecture du fichier JSON des vacances scolaires", e);
+        }
+    }
+
+    @PostMapping("/veriferdem/{iddemande}")
+     public String  verifierDemandeConge(@RequestParam("image") MultipartFile image , @PathVariable("iddemande") long iddemande ) {
+       String  resultat ="" ;
+        Demande_conge demande_conge=demande_congebRepository.findById(iddemande).orElse(null);
+         String typeCongeDemande = demande_conge.getTypecongeexceptionnel().toString();
+
+         Map<String, String> resultMap = extractTextFromJustificatif(image);
+         String duree = resultMap.get("duree");
+         Integer dureee= Integer.parseInt(duree);
+
+         Map<String, Integer> joursLegauxParTypeConge=verifierduresyntec();
+
+         for (Map.Entry<String, Integer> entry : joursLegauxParTypeConge.entrySet()) {
+             String typeconge = entry.getKey();
+
+             Integer dureelegale = entry.getValue();
+
+             if ( typeCongeDemande.equals(typeconge)) {
+
+                 System.out.println("Type de congé trouvé : " + typeCongeDemande);
+                 System.out.println("Durée légale pour ce type de congé : " + dureelegale);
+
+
+                 if (dureee <= dureelegale) {
+                     runtimeService.setVariable(currentProcessInstanceId, "missingAttachment", false);
+                     runtimeService.setVariable(currentProcessInstanceId, "decision", true);
+                     runtimeService.setVariable(currentProcessInstanceId, "passthrough", true);
+                     resultat+= "duree legale bien appliquée";
+                 } else {
+                     System.out.println("La durée de la demande de congé dépasse les jours légaux pour ce type de congé.");
+                     runtimeService.setVariable(currentProcessInstanceId, "missingAttachment", true);
+
+                     runtimeService.setVariable(currentProcessInstanceId, "passthrough", false);
+                     runtimeService.setVariable(currentProcessInstanceId, "deuxiemevalidation", true);
+                     resultat+= "duree legale non  appliquée";
+                 }
+
+                 break;
+             }
+         }
+return resultat;
+     }
+@GetMapping("/mail/{idpersonnel}")
+    public String mail(@PathVariable("idpersonnel") long idpersonnel){
+      Personnel personnel =personnelRepository.findById(idpersonnel).orElse(null);
+
+    return personnel.getEtatmail();}
+    @GetMapping("/getdecision")
+    public String getdecision() {
+        Boolean decision = (Boolean) runtimeService.getVariable(currentProcessInstanceId, "decision");
+        Boolean missingattachment = (Boolean) runtimeService.getVariable(currentProcessInstanceId, "missingAttachment");
+        String resultat = "";
+        System.out.println(decision);
+        System.out.println("here");
+        System.out.println(missingattachment);
+        if (decision && !missingattachment) {
+            resultat += "Demande validée";
+        } else if (!decision && !missingattachment) {
+            resultat = "demande non validée";
+        } else if (decision && missingattachment) {
+            resultat += "il manque les justifs";
+        }
+    return resultat;
+    }
+    @GetMapping("/getuniquecode/{mail}")
+    public Personnel getuserbypassword(@PathVariable("mail") String  mail ){
+        return personnelRepository.findPersonnelByEmail(mail);
+
+    }
+}
 
 
 

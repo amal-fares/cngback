@@ -1,7 +1,11 @@
 package com.example.applicationcongess.services;
 
+import com.example.applicationcongess.controller.Chatcontroller;
 import com.example.applicationcongess.controller.Demande_congecontr;
+import com.example.applicationcongess.enums.Type_conge;
+import com.example.applicationcongess.models.Demande_conge;
 import com.example.applicationcongess.models.Personnel;
+import com.example.applicationcongess.repositories.Demande_congebRepository;
 import com.example.applicationcongess.repositories.PersonnelRepository;
 import org.activiti.engine.*;
 import org.activiti.engine.delegate.DelegateTask;
@@ -31,6 +35,10 @@ public class checkdonneesdeform implements TaskListener {
     @Autowired
     Demande_congecontr demande_congecontr;
     public String resultat ;
+    @Autowired
+    Chatcontroller chatcontroller;
+    @Autowired
+    Demande_congebRepository demande_congebRepository;
     @Override
     public void   notify(DelegateTask delegateTask) {
         System.out.println("hhhh");
@@ -47,6 +55,7 @@ public class checkdonneesdeform implements TaskListener {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         System.out.println(userDetails.getUsername());
         Personnel personnel = personnelRepository.findById(userDetails.getCin()).orElse(null);
+        String str = Long.toString(personnel.getCin());
         float soldecongeuserconnecte=personnel.getSolde_conges();
         System.out.println(processInstanceencours.getProcessInstanceId());
         //calcuer le nombre de jours
@@ -54,19 +63,23 @@ public class checkdonneesdeform implements TaskListener {
         LocalDate endDate = ((Date) runtimeService.getVariable(processInstanceencours.getProcessInstanceId(), "end")).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
         System.out.println(daysBetween);
-
-        if (daysBetween < soldecongeuserconnecte && startDate.isBefore(endDate)) {
-            System.out.println("vous avez le droit de conges et les jours sont valides");
+        long iddemande = ((long) runtimeService.getVariable(demande_congecontr.getCurrentProcessInstanceId(), "id_demande_conge"));
+        Demande_conge demande_conge=demande_congebRepository.findById(iddemande).orElse(null);
+        if (startDate.isBefore(endDate)) {
+            System.out.println("date deb avant datefin");
             resultat="vous avez le droit de conges et les jours sont valides";
 
-        }else {
+        }
+            else {
 
-            Task task = taskService.createTaskQuery().taskName("Remplir les champs de forumlaire de demande de conges").singleResult();
+                demande_congebRepository.deleteById(iddemande);
+                System.out.println("nVous n avez pas le droit de congés");
+                resultat="Vous n'avez pas le droit de congés ";
 
-            System.out.println("nVous n avez pas le droit de congés");
-            resultat="Vous n'avez pas le droit de congés ";
-            runtimeService.deleteProcessInstance(processInstanceencours.getProcessInstanceId(), "Raison de l'arrêt du processus");
+            }
+
+
         }
 
     }
-}
+

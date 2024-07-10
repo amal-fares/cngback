@@ -165,6 +165,11 @@ user.setUsername(signUpRequest.getUsername());
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(livRole);
                         break;
+                    case "Role_admin":
+                        Role adminrole = roleRepository.findByName(ERole.Role_admin)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(adminrole);
+                        break;
                     case "Role_manager2":
                         Role clientRole = roleRepository.findByName(ERole.Role_manager2)
                                 .orElseThrow(() -> new RuntimeException("Error: Role_manager2 is not found."));

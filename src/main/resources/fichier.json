@@ -1,0 +1,21 @@
+[{
+      "type": "Conge_demariage",
+      "duree_en_jours": 4
+    },
+    {
+      "type": "Conge_en_cas_de_décès",
+      "duree_en_jours": 1
+    },
+    {
+      "type": "naissance",
+      "duree_en_jours": 3
+    },
+    {
+      "type": "Conge_Enfant_malade",
+      "duree_en_jours": 4
+    },
+    {
+      "type": "Conge_de_Demangement",
+      "duree_en_jours": 1
+    }
+  ]

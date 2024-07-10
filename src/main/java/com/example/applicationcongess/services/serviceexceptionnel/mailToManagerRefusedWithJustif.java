@@ -1,11 +1,11 @@
 package com.example.applicationcongess.services.serviceexceptionnel;
 
-
 import com.example.applicationcongess.controller.Demande_congecontr;
 import com.example.applicationcongess.models.Demande_conge;
 import com.example.applicationcongess.models.Personnel;
 import com.example.applicationcongess.repositories.Demande_congebRepository;
 import com.example.applicationcongess.repositories.PersonnelRepository;
+import io.swagger.v3.oas.annotations.servers.Server;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.mail.internet.MimeMessage;
 
 @Service
-public class mailToManagerValidatedWithoutJustif implements JavaDelegate {
+public class mailToManagerRefusedWithJustif implements JavaDelegate {
     @Autowired
     PersonnelRepository personnelRepository;
     @Autowired
@@ -31,23 +31,23 @@ public class mailToManagerValidatedWithoutJustif implements JavaDelegate {
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
 
-        System.out.println("mail to manager without justif ");
+        System.out.println("mail to manager  refused with justif ");
         String proessInstanceID = demande_congecontr.getCurrentProcessInstanceId();
+
         runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "mail",true);
-        runtimeService.getVariable(demande_congecontr.getCurrentProcessInstanceId(), "id_demande_conge");
+         runtimeService.getVariable(demande_congecontr.getCurrentProcessInstanceId(), "id_demande_conge");
 
         Long initiateurId = (long) runtimeService.getVariable(proessInstanceID, "initiator");
         Personnel personnelsoumis=personnelRepository.findById(initiateurId).orElse(null);
-        personnelsoumis.setEtatmail("validatedwithout");
+
+       personnelsoumis.setEtatmail("mailmaangerrefused");
         personnelRepository.save(personnelsoumis);
-        System.out.println("etatmail");
-        System.out.println(personnelsoumis.getEtatmail());
         Personnel manager= personnelsoumis.getManager();
-        manager.setEtatmail("validatedwithout");
+        manager.setEtatmail("mailmaangerrefused");
         personnelRepository.save(manager);
-        String subject = "suivre la demande";
+        String subject = "Validation effectuéé par un gestionnaire et refusée ";
         String content = "Bonjour,\n\n" +
-                "La demande  soumise par "+ personnelsoumis.getUsername()+" est valide pour le moment par "+ personnelsoumis.getGestionnaire().getUsername() +" mais il manque les justificatif .Il faut les fournir dans les plus bref délais  " +
+                "La demande  soumise par "+ personnelsoumis.getUsername()+" est rejettée par  "+ personnelsoumis.getGestionnaire().getUsername() +
                 "Cordialement,\n" +
                 "Votre équipe de gestion des congés";
         MimeMessage message = mailSender.createMimeMessage();
@@ -61,7 +61,5 @@ public class mailToManagerValidatedWithoutJustif implements JavaDelegate {
 
 
     }
-
-
 
 }

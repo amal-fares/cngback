@@ -74,8 +74,9 @@ public class UserService {
      return updatedPersonnel;
     }
     public String SendCode(String email) throws MessagingException {
+        String resultat="";
         if(personnelRepository.findPersonnelByEmail(email)==null){
-            return "Email n'existe pas";
+
         }else{
             String code =   RandomStringUtils.randomAlphanumeric(5);;
             Personnel u =personnelRepository.findPersonnelByEmail(email);
@@ -83,17 +84,21 @@ public class UserService {
             u.setDatendcode( LocalDateTime.now().plusMinutes(5));
             sendEmail(u.getEmail(),"RESETCODE","votre code de verification est :"+code+"\nNB:Le code ne fonctionne pas apres 5 minutes");
             personnelRepository.save(u);
-            return "ok";
+            resultat+="succes";
+
         }
+        return resultat;
     }
 
     public String ResetPassword(String code, String newPassword) {
+        String resultat="";
             Personnel u = personnelRepository.findByCode(code);
         if (u == null ){
-            return "code est incorrect";
+resultat+="resultat incorret";
         }
         else if(u.getDatendcode().isBefore(LocalDateTime.now())) {
-            return "date expirer";
+            resultat+="date expiré";
+
         }
         else{
             u.setPassword(encoder.encode(newPassword));
@@ -101,6 +106,8 @@ public class UserService {
             u.setDatendcode(null);
             personnelRepository.save(u);
         }
-        return "OK";
+        resultat+="OK";
+        return  resultat;
     }
+
 }

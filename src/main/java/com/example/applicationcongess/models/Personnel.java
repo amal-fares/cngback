@@ -26,6 +26,8 @@ public class Personnel {
     Long cin ;
     String nom ;
     String prenom ;
+    boolean confirmsoldeprev;
+    long soldeprevisonnel;
     @Column(unique = true)
     String username ;
     Date date_naissance;
@@ -39,6 +41,7 @@ public class Personnel {
     float  jours_restants ;
     String code ;
     LocalDateTime datendcode ;
+    String etatmail;
     Boolean statusatifounon ;
 
     String jwt ;

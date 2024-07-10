@@ -1,8 +1,10 @@
 package com.example.applicationcongess.services;
 
 
+import com.example.applicationcongess.controller.Demande_congecontr;
 import com.example.applicationcongess.models.Personnel;
 import com.example.applicationcongess.repositories.PersonnelRepository;
+import org.activiti.engine.RuntimeService;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,10 @@ public class mailaumaangerpremeir implements JavaDelegate {
     private JavaMailSender mailSender;
     @Autowired
     checkdonneesdeform checkdonneesdeform;
+    @Autowired
+    RuntimeService runtimeService;
+    @Autowired
+    Demande_congecontr demande_congecontr;
     @Override
     public void execute(DelegateExecution delegateExecution ) throws Exception {
         System.out.println("mailaumangerprmeier");
@@ -45,7 +51,7 @@ public class mailaumaangerpremeir implements JavaDelegate {
                     "Votre équipe de gestion des congés";
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
+            runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "mail",true);
             helper.setTo(obejtmanager.getEmail());
             helper.setSubject(subject);
             helper.setText(content, true);

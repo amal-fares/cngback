@@ -1,7 +1,9 @@
 package com.example.applicationcongess.services.serviceexceptionnel;
 
 import com.example.applicationcongess.controller.Demande_congecontr;
+import com.example.applicationcongess.models.Demande_conge;
 import com.example.applicationcongess.models.Personnel;
+import com.example.applicationcongess.repositories.Demande_congebRepository;
 import com.example.applicationcongess.repositories.PersonnelRepository;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.delegate.DelegateExecution;
@@ -25,16 +27,24 @@ public class mailToMangerValidatedWithJustif implements JavaDelegate {
     Demande_congecontr demande_congecontr;
     @Autowired
     RuntimeService runtimeService;
+    @Autowired
+    Demande_congebRepository demande_congebRepository;
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
 
-        System.out.println("mail to manager without justif ");
+        System.out.println("mail to manager with justif ");
         String proessInstanceID = demande_congecontr.getCurrentProcessInstanceId();
+        runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "mail",true);
 
+        runtimeService.getVariable(demande_congecontr.getCurrentProcessInstanceId(), "id_demande_conge");
 
         Long initiateurId = (long) runtimeService.getVariable(proessInstanceID, "initiator");
         Personnel personnelsoumis=personnelRepository.findById(initiateurId).orElse(null);
+        personnelsoumis.setEtatmail("collabmaangervalidated");
+        personnelRepository.save(personnelsoumis);
         Personnel manager= personnelsoumis.getManager();
+        manager.setEtatmail("collabmaangervalidated");
+        personnelRepository.save(manager);
         String subject = "Une validation a éte effectué de la part d un gestionnaie";
         String content = "Bonjour,\n\n" +
                 "La demande  soumise par "+ personnelsoumis.getUsername()+" est valide par  "+ personnelsoumis.getGestionnaire().getUsername() +

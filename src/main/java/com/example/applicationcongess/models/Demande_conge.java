@@ -1,8 +1,6 @@
 package com.example.applicationcongess.models;
 
-import com.example.applicationcongess.enums.Statut_conge;
-import com.example.applicationcongess.enums.Type_conge;
-import com.example.applicationcongess.enums.Type_conge_exceptionnel;
+import com.example.applicationcongess.enums.*;
 import com.fasterxml.jackson.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,14 +20,18 @@ public class Demande_conge {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id_demandeconge;
+    Etat etatdemande;
     @Temporal(TemporalType.DATE)
 
     Date date_debut ;
     @Temporal(TemporalType.DATE)
     Date date_fin ;
     float duree;
+
+Typecongeprev typecongeprev;
 Boolean justificatifs_requis;
 Type_conge_exceptionnel typecongeexceptionnel;
+
      Date deadline;
     @OneToOne(mappedBy = "demandeConge", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
      Chatroom chatroom;

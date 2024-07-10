@@ -5,5 +5,6 @@ public enum ERole {
     Role_gestionnaire,
     Role_manager,
     Role_manager2,
+    Role_admin
 
 }

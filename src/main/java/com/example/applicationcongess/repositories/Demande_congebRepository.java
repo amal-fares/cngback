@@ -31,7 +31,7 @@ public interface Demande_congebRepository extends CrudRepository<Demande_conge, 
 
     List<Demande_conge> findAll();
   List<Demande_conge>getDemande_congeByTypeconge(Type_conge typesconges);
-List<Demande_conge> findDemande_congeByCollaborateurAndStatutconge(Personnel personnel , Statut_conge statut_conge);
+List<Demande_conge> findDemande_congeByCollaborateurAndStatutcongeAndTypeconge(Personnel personnel , Statut_conge statut_conge,Type_conge type_conge);
 List<Demande_conge> findDemande_congeByCollaborateurAndTypeconge(Personnel personnel , Type_conge type_conge);
 
 List<Demande_conge> findDemande_congeByCollaborateur(Personnel personnel);
@@ -43,4 +43,15 @@ List<Demande_conge> findDemande_congeByCollaborateur(Personnel personnel);
 List<Demande_conge> findDemande_congeByDatedecisionBetween(Date datedeb,Date datefin);
 @Query("SELECT d FROM Demande_conge d  WHERE d.date_debut >= :datedebut AND d.date_fin <= :datefin ")
 List<Demande_conge> foundbydatdeby( @Param("datedebut")Date datedeb,@Param("datefin")Date datefin);
+
+
+
+    @Query("SELECT u FROM Demande_conge u " +
+            "WHERE (:character IS NULL " +
+            "      OR LOWER(u.typecongeexceptionnel) LIKE LOWER(CONCAT('%', :character, '%')) " +
+            "      OR LOWER(u.collaborateur.prenom) LIKE LOWER(CONCAT('%', :character, '%')) " +
+            "      OR LOWER(u.date_debut) LIKE LOWER(CONCAT('%', :character, '%')) " +
+            "      OR LOWER(u.date_fin) LIKE LOWER(CONCAT('%', :character, '%')))")
+    List<Demande_conge> rechercheDynamique(@Param("character") String character);
+
 }

@@ -32,18 +32,17 @@ public class verificationDesJustificatifsTaille implements TaskListener {
         int imageSizeInBytes = (int) metadata.get("bytes");
         Long iddemandeconge = ((Long) runtimeService.getVariable(demande_congecontr.getCurrentProcessInstanceId(), "id_demande_conge"));
         Demande_conge demande_conge = demande_congebRepository.findById(iddemandeconge).orElse(null);
-
-        int maxSizeInBytes= 1000;
+       runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "missingAttachment",false );
+demande_conge.setJustificatifPresent(true);
+demande_congebRepository.save(demande_conge);
+        int maxSizeInBytes= 2000000;
         if (  imageSizeInBytes <= maxSizeInBytes){
             System.out.println("taille de l image dans les normes ");
-            runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "passthrough", true);
-            runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "decision", true);
-            demande_conge.setStatutconge(Statut_conge.valide2);
-            demande_congebRepository.save(demande_conge);
+
+
+
         }else {
             System.out.println("taille de l image pas dans les normes ");
-            runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "passthrough", false);
-            runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "decision", false);
 
         }
     }

@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.example.applicationcongess.models.*;
 import com.example.applicationcongess.repositories.*;
+import org.activiti.engine.RuntimeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -40,7 +41,10 @@ public class Chatcontroller {
     @Autowired
     SimpMessagingTemplate messagingTemplate;
     final  Cloudinary cloudinary;
-
+@Autowired
+    RuntimeService runtimeService;
+@Autowired
+Demande_congecontr demande_congecontr;
     private Map<String, String> valuesMap = new HashMap<>();
     @MessageExceptionHandler
     public void handleException(Throwable exception) {
@@ -114,6 +118,30 @@ public class Chatcontroller {
         messagingTemplate.convertAndSendToUser(iduser, "/topic/refus", message);
         return message
                 ;
+    }
+    @MessageMapping("/ajoutjustif")
+
+    public String ajoutjustif(String message , String  iduser ) {
+        runtimeService.setVariable(demande_congecontr.getCurrentProcessInstanceId(), "hasReminded", true);
+
+        messagingTemplate.convertAndSendToUser(iduser, "/topic/ajoutjustif", message);
+        return message
+                ;
+    }
+    @MessageMapping("/congesprev")
+
+    public String notifcongesprev(String message , String  iduser ) {
+
+        messagingTemplate.convertAndSendToUser(iduser, "/topic/congesprev", message);
+        return message
+                ;
+    }
+    @MessageMapping("/traitement")
+
+    public String notiftraitement(String message , String  iduser ) {
+
+        messagingTemplate.convertAndSendToUser(iduser, "/topic/traitement", message);
+        return message;
     }
 }
 
