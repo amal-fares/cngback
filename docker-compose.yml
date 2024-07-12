@@ -3,7 +3,7 @@ version: "3"
 services:
   springboot-app:
     # container_name: Kaddem-app
-    image: amalfares5se3sirius/alpine:1.0.0
+    image: amalfaresstage/alpine:1.0.0
     restart: always
     build: .
     ports:
